@@ -45,7 +45,6 @@ public class FormCheckerMarkAnalysisStatementsTest {
         public XML singleReturnInHandler() {
             return XML.parseTemplate("<form action=[HANLDER]/>").plug(
                     "HANDLER", new SubmitHandler() {
-                        @SuppressWarnings("unused")
                         public XML run() {
                             return null;
                         }
@@ -55,7 +54,6 @@ public class FormCheckerMarkAnalysisStatementsTest {
         public XML singlePlugInHandler() { // + 1 return
             return XML.parseTemplate("<form action=[HANLDER]/>").plug(
                     "HANDLER", new SubmitHandler() {
-                        @SuppressWarnings("unused")
                         public XML run() {
                             return XML.parseTemplate("<wrap><[FOO]></wrap>")
                                     .plug("FOO", null);

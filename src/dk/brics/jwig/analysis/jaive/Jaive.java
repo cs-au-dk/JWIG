@@ -117,7 +117,6 @@ public class Jaive {
         Set<Class<? extends WebApp>> webApps = interfacee.getWebApps();
         for (Class<? extends WebApp> webApp : webApps) {
             SootClass sootClass = resolver.getSootClass(webApp);
-            @SuppressWarnings("unchecked")
             final Set<SootClass> set = Collections.singleton(sootClass);
             String graph = visualizer.visualize(set);
             write(new File(DIR, sootClass.getShortName() + "@"

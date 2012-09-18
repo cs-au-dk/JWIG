@@ -25,7 +25,6 @@ public class FormCheckerMarkAnalysisClassesTest {
         public XML xmlHandler() {
             return XML.parseTemplate("<form action=[HANLDER]/>").plug(
                     "HANDLER", new SubmitHandler() {
-                        @SuppressWarnings("unused")
                         public XML run() {
                             return null;
                         }

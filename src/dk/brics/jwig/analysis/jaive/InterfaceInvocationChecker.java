@@ -367,7 +367,6 @@ public class InterfaceInvocationChecker {
                             IntConstant intConstant = (IntConstant) jArrayRef
                                     .getIndex();
                             int index = intConstant.value;
-                            @SuppressWarnings("null")
                             Type oldType = varArgTypes[index];
                             Type type = jAssignStmt.getRightOp().getType();
                             if (oldType instanceof RefType
@@ -396,7 +395,6 @@ public class InterfaceInvocationChecker {
                                     .add(new CouldNotInferRecordTypeForVarArgs(
                                             enclosingMethod,
                                             enclosingStatement, varArgBase));
-                            @SuppressWarnings("null")
                             final int length = varArgTypes.length;
                             for (int i = 0; i < length; i++) {
                                 varArgTypes[i] = varArgBase;

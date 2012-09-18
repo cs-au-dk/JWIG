@@ -31,7 +31,6 @@ public class FormCheckerFindXMLReturnersTest {
         public XML voidHandler() {
             return XML.parseTemplate("<form action=[HANLDER]/>").plug(
                     "HANDLER", new SubmitHandler() {
-                        @SuppressWarnings("unused")
                         public void run() {
                             //
                         }
@@ -41,7 +40,6 @@ public class FormCheckerFindXMLReturnersTest {
         public XML xmlHandler() {
             return XML.parseTemplate("<form action=[HANLDER]/>").plug(
                     "HANDLER", new SubmitHandler() {
-                        @SuppressWarnings("unused")
                         public XML run() {
                             return null;
                         }
