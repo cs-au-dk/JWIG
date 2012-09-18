@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module relativePaths="true" type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="hibernate" name="Hibernate">
+      <configuration>
+        <datasource-map>
+          <unit-entry name="&lt;anonymous&gt;hibernate.cfg.xml@242" value="aba081b9-818a-4a99-8fb4-2d185eb1c226" />
+        </datasource-map>
+        <deploymentDescriptor name="hibernate.cfg.xml" url="file://$MODULE_DIR$/../examples/src/hibernate.cfg.xml" />
+      </configuration>
+    </facet>
+  </component>
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/../examples/build" />
+    <output-test url="file://$MODULE_DIR$/../examples/build" />
+    <content url="file://$MODULE_DIR$/../examples">
+      <sourceFolder url="file://$MODULE_DIR$/../examples/build" isTestSource="false" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="Jwig" />
+    <orderEntry type="library" name="JUnit" level="project" />
+    <orderEntry type="library" name="commoms-io" level="project" />
+    <orderEntry type="library" name="commons-fileupload" level="project" />
+    <orderEntry type="library" name="Log4j" level="project" />
+    <orderEntry type="library" name="mail" level="project" />
+    <orderEntry type="library" name="paranamer" level="project" />
+    <orderEntry type="library" name="Servlet-api" level="project" />
+    <orderEntry type="library" name="Xact" level="project" />
+    <orderEntry type="library" name="XMLstuff" level="project" />
+    <orderEntry type="library" name="hibernate3 (2)" level="project" />
+    <orderEntry type="library" name="mysql" level="project" />
+    <orderEntry type="library" name="hibernate3" level="project" />
+  </component>
+</module>
+

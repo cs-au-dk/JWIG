@@ -1,0 +1,9 @@
+dist
+doc
+doc-public
+*.tar.gz
+temp
+jwig-*.zip
+kickstart.zip
+build
+local.properties

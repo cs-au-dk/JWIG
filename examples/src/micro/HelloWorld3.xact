@@ -1,0 +1,44 @@
+package micro;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+public class HelloWorld3 extends WebApp {
+
+	@URLPattern("")
+	public XML hello() { // also test with method="post" and enctype="multipart/form-data"  
+		return [[
+			<html>
+				<head>
+					<title>Hello World</title>
+				</head>
+				<body>
+					<form method="get" action=[SUBMIT]>
+					Write "Ê¯Â∆ÿ≈": <input type="text" name="t" value="Ê¯Â∆ÿ≈"/>
+					<input type="submit" value="Submit"/>										
+					</form>
+				</body>
+			</html>
+		]].plug("SUBMIT", new SubmitHandler() {
+			XML run(String t) {
+				log.info("t="+t);
+				String s = "Ê¯Â∆ÿ≈";
+				return [[
+					<html>
+						<head>
+							<title>Hello World</title>
+						</head>
+						<body>
+							Your text: <{t}>
+							<p/>
+							Equal <{s}>: <{new Boolean(s.equals(t))}>
+							<p/>
+							
+						</body>
+					</html>
+				]];
+			}
+		});
+	}
+}
+

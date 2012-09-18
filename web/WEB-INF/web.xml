@@ -1,0 +1,47 @@
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
+
+    <display-name>JWIG</display-name>
+
+    <filter>
+        <filter-name>Dispatcher</filter-name>
+        <filter-class>dk.brics.jwig.server.Dispatcher</filter-class>
+        <init-param>
+          <param-name>MainClass</param-name>
+          <param-value>Main</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>Dispatcher</filter-name>
+        <url-pattern>/*</url-pattern>
+        <dispatcher>ERROR</dispatcher>
+        <dispatcher>REQUEST</dispatcher>
+    </filter-mapping>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/</location>
+    </error-page>
+
+
+    <servlet>
+        <servlet-name>Synchronizer</servlet-name>
+        <servlet-class>dk.brics.jwig.server.tomcat7.TomcatCometHandler</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Synchronizer</servlet-name>
+        <url-pattern>/==</url-pattern>
+    </servlet-mapping>
+
+    <listener>
+        <listener-class>
+            org.apache.commons.fileupload.servlet.FileCleanerCleanup
+        </listener-class>
+    </listener>
+
+</web-app>

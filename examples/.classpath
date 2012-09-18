@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+    <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" />
+    <classpathentry kind="src" path="src" />
+    <classpathentry kind="lib" path="/Jwig/web/WEB-INF/lib/mail.jar" />
+    <classpathentry kind="lib" path="/Jwig/web/WEB-INF/lib/jaxen.jar" />
+    <classpathentry kind="lib" path="/Jwig/web/WEB-INF/lib/xerces.jar" />
+    <classpathentry kind="lib" path="/Jwig/web/WEB-INF/lib/smtp.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/junit.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/mailapi.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/commons-fileupload.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/log4j.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/xact.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/servlet-api.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/paranamer.jar" />
+    <classpathentry kind="lib" path="/Jwig/lib/commons-io.jar" />
+    <classpathentry kind="src" path="/Jwig" combineaccessrules="false" />
+    <classpathentry kind="output" path="bin" />
+</classpath>
+

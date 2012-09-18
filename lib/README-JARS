@@ -1,0 +1,41 @@
+Organization of jar files:
+
+lib/ - jar files used by JWIG at runtime
+  commons-fileupload.jar  Apache commons file upload
+  commons-io.jar          Apache commons IO
+  mailapi.jar             javax.mail API
+  xact.jar                XACT, XML transformations
+  log4j.jar               log4j
+  json.jar                JSON
+  ehcache.jar             net.sf.ehcache, for caching
+  bcel-5.2-daimi.jar      BCEL DAIMI version, used by ParameterNamer and XACT
+  hibernate3.jar          Hibernate
+  schematools.jar         dk.brics.schematools
+  automaton.jar           dk.brics.automaton
+  dom4j.jar               used by Hibernate and elsewhere
+
+lib/building/ - jar files used by JWIG at compile time only
+  jsmin.jar               JSMin, used for minifying jwig.js
+  catalina.jar            Catalina, Comet processor
+  resin.jar               Resin, Comet servlet
+  servlet-api.jar         Java Servlets API
+  junit.jar               JUnit, for testing
+  xalan.jar               Xalan XSLT, for manual.xml
+  serializer.jar          XML serializer, for manual.xml
+
+lib/analysis/ - jar files used by JWIG program analysis only
+  soot.jar                Soot
+  string.jar              JSA
+  ...
+
+lib/app/ - jar files used by most JWIG applications
+  jaxen.jar               ...
+  mail.jar                ...
+  smtp.jar                ...
+
+lib/app-building/ - jar files used by most JWIG applications at compile time but not at runtime
+  java5.jar               the XACT compiler
+  misc.jar                BRICS utilities, used by the XACT compiler
+
+examples/lib/ - extra jar files used by the example applications 
+  ...

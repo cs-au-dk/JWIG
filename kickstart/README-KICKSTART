@@ -1,0 +1,45 @@
+JWIG
+----
+
+Copyright (C) 2008-2012 Anders Moeller and Mathias Schwarz
+
+This source code in this package may be used under the terms of the
+BSD license.  Please read the file COPYING for details.
+
+This package contains a simple JWIG application and relevant files to 
+get you started with JWIG.
+
+First, follow the instructions in the file INSTALL for installing 
+the necessary programs.
+The file INSTALL-PROXY contains instructions for setting up a local  
+Apache httpd proxy server in front of Tomcat. 
+The file INSTALL-DATABASE describes database setup using MySQL.
+
+Rename the file local.properties.example to local.properties and 
+edit it to set the 'webapps' property to the location of the web 
+application directory of your servlet engine.
+
+Run
+
+  ant war
+ 
+to build the web archive 'jwig-kickstart.war' or
+
+  ant deploy
+  
+to build and deploy it on your servlet engine. Then start your 
+servlet engine. (The servlet engine may automatically discover the 
+new web application, so the last step may not be necessary.)
+
+Now open 'http://HOST:PORT/jwig-kickstart/hello' in your browser
+(with the appropriate HOST and PORT, as specified in your servlet engine 
+configuration) and you will hopefully see a Hello World message. 
+If not, see the servlet engine log files.
+
+You can also run
+
+  ant analyze
+  
+to run the JWIG program analyzer on your program.
+
+For more information about JWIG, see http://www.brics.dk/JWIG/

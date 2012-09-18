@@ -1,0 +1,80 @@
+Instructions for running Tomcat behind a local Apache httpd proxy 
+server with SSL/TLS:
+
+1) Set jwig.base_url and jwig.base_url_secure (see the javadoc for 
+   dk.brics.jwig.WebSite) in jwig.properties. Example:
+   
+    jwig.base_url = http://services.brics.dk/java
+    jwig.base_url_secure = https://services.brics.dk/java
+
+   These properties set up reverse proxying.
+
+2) In httpd.conf, add proxy instructions:
+
+    <VirtualHost *:80>
+      ProxyPass         /java/  http://localhost:8080/
+      ProxyPassReverse  /java/  http://localhost:8080/
+      ProxyPassReverseCookiePath / /java/
+    </VirtualHost>
+    
+   This forwards all requests on port 80 (default non-SSL port) starting 
+   with "/java/" to port 8080 and corresponding reverse proxying.
+  
+3) In httpd-ssl.conf, add proxy instructions (notice the different port 
+   numbers):
+
+    <VirtualHost _default_:443>
+      ProxyPass         /java/  http://localhost:8081/
+      ProxyPassReverse  /java/  http://localhost:8081/
+      ProxyPassReverseCookiePath / /java/
+      ...
+    </VirtualHost>
+
+   This forwards all requests on port 443 (default SSL port) starting 
+   with "/java/" to port 8081 and corresponding reverse proxying.
+  
+4) In Tomcat's server.xml, we need *two* connectors:
+
+    <Connector port="8080" 
+               protocol="org.apache.coyote.http11.Http11NioProtocol" 
+               URIEncoding="UTF-8"/>
+
+    <Connector port="8081" 
+               protocol="org.apache.coyote.http11.Http11NioProtocol" 
+               URIEncoding="UTF-8" 
+               scheme="https"
+               secure="true"/>
+
+   The first is for non-SSL connections from the client, the second is 
+   for SSL. Note that communication between httpd and Tomcat is here 
+   without SSL, even when the client's requests to httpd use SSL. This 
+   means that the SSL certificate is only needed on httpd, not on Tomcat,
+   and we do not need an SSL connector in Tomcat.
+   
+5) You may also want to increase the number of httpd server processes and 
+   threads to improve support for long polling. Note that this depends on 
+   the MPM server-pool management being used in your httpd configuration, 
+   as mentioned in httpd-mpm.conf. (See also 
+   http://jha.rajeev.googlepages.com/web2push)
+   In httpd-mpm.conf, set e.g. 
+   
+    <IfModule mpm_prefork_module>
+      ServerLimit         1000
+      MaxClients          1000
+      StartServers        5
+      MinSpareServers     5
+      MaxSpareServers     20
+      MaxRequestsPerChild 100
+    </IfModule>
+    
+    <IfModule mpm_worker_module>
+      ServerLimit         100 
+      ThreadsPerChild     32
+      MaxClients          3200
+      StartServers        5
+      MinSpareThreads     25 
+      MaxSpareThreads     75
+      MaxRequestsPerChild 100 
+    </IfModule>
+    
+   The value of MaxClients should be the same as jwig.max_long_polling.

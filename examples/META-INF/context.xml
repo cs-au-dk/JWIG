@@ -1,0 +1,2 @@
+<!--ensures that the examples can be redeployed without restarting Tomcat -->
+<Context reloadable="true" antiJARLocking="true" antiResourceLocking="true"/>

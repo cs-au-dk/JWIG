@@ -1,0 +1,68 @@
+package microchat;
+
+import java.util.*;
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+@URLPattern("microchat")
+public class MicroChat extends WebApp {
+
+    class Messages {
+      List<String> ms = new ArrayList<String>();
+      
+      void add(String msg) {
+        ms.add(msg);
+        update(this);
+      }
+      
+      void reset() {
+        ms.clear();
+        update(this);
+      }
+    }
+    
+    Messages messages = new Messages();
+
+    @URLPattern("")
+	public XML run() {
+		return [[
+          <html>
+            <head>
+              <title>MicroChat</title>
+            </head>
+            <body>
+              <{ 
+                new XMLProducer(messages) {
+	              XML run() {
+	              	if (!messages.ms.isEmpty()) 
+	              		return [[
+	              		  <ul>
+	              		    <{ [[<li><[MSG]></li>]].plugWrap("MSG", messages.ms) }>
+	              		  </ul>
+	              		]];
+	        		else
+	          			return [[]];
+	          	  }
+	    		} 
+	    	  }>
+              <form method="post" action=[SEND]>
+                <input type="text" name="msg"/>
+                <input type="submit" value="Send!"/>
+                <p/>
+                <input type="button" value="Reset" onclick=[RESET]/>
+              </form>
+            </body>
+          </html>
+        ]]
+        .plug("SEND", new SubmitHandler() {
+  	      void run(String msg) {
+		    messages.add(msg);
+          }
+	    })
+        .plug("RESET", new EventHandler() {
+  	      void run() {
+		    messages.reset();
+          }
+	    });
+	}
+}

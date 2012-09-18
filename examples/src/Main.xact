@@ -1,0 +1,32 @@
+import dk.brics.jwig.WebSite;
+
+public class Main extends WebSite {
+    public Main() { // override/extend jwig.properties
+        setProperty("jwig.session_timeout", 2);
+        setProperty("jwig.max_sessions", 10);
+        setProperty("jwig.cache_max_pages", 4);
+        setProperty("log4j.rootLogger", "DEBUG, jwig");
+    }
+
+    @Override
+    public void init() {
+        add(new quickpoll.QuickPoll());  // http://HOST:PORT/jwig-examples/quickpoll
+        add(new microchat.MicroChat());  // http://HOST:PORT/jwig-examples/microchat
+        if (getProperty("jwig.hibernate", false)) 
+           add(new guessinggame.GuessingGame());  // http://HOST:PORT/jwig-examples/guessinggame/start
+        add(new guessinggame2.GuessingGame());
+        add(new micro.HelloWorld());  // http://HOST:PORT/jwig-examples/hello
+        add(new micro.EmailTest());  // http://HOST:PORT/jwig-examples/micro/EmailTest/send
+        add(new micro.RequestInfo()); // http://HOST:PORT/jwig-examples/micro/RequestInfo/run
+        add(new micro.AccessControl());  // http://HOST:PORT/jwig-examples/access/hello?password=42
+        add(new micro.Params());  // http://HOST:PORT/jwig-examples/micro/Params
+        add(new micro.FileUpload());  // http://HOST:PORT/jwig-examples/micro/FileUpload/upload
+
+        /*
+        add(new micro.HelloWorld3()); // http://HOST:PORT/jwig-examples/micro/HelloWorld3
+        add(new micro.HelloWorld5()); // http://HOST:PORT/jwig-examples/micro/HelloWorld5/run?username=foo
+        add(new micro.ArrayTest());  // http://HOST:PORT/jwig-examples/arraytest/1?x=1&x=2
+        add(new micro.ArgTest());
+        */
+    }
+}

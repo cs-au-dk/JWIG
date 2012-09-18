@@ -1,0 +1,1774 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<html>
+<head>
+<title>JWIG User Manual</title>
+<link href="style.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+
+<div id="titlepage">
+<h1>JWIG User Manual</h1>
+<h2>Anders Møller &amp; Mathias Schwarz<br/>
+<a href="mailto:amoeller@cs.au.dk,schwarz@cs.au.dk?Subject=JWIG">{amoeller,schwarz}@cs.au.dk</a></h2>
+<h3>Last update: <date/></h3>
+</div>
+
+<div id="contents">
+<h1 class="center">JWIG User Manual</h1>
+<p>Contents:</p>
+<sidecontents/>
+(hover mouse to see subsections)
+</div>
+
+<div id="main">
+
+<h2>Contents</h2>
+<contents/>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:introduction">What is JWIG?</h1>
+
+<p>
+JWIG is a Java-based web application programming system. JWIG is being developed to
+explore high-level language design and program analysis support for web programming.
+</p>
+<p>
+Highlights of JWIG 2.0:
+<ul>
+<li> The main part of a JWIG application runs on the server, although JWIG also uses
+a basic JavaScript library for generic client-side functionality.
+</li>
+<li> JWIG uses the <a href="http://www.brics.dk/Xact/"><xact/></a> system for
+flexible and safe dynamic construction of XML (typically XHTML) data.
+</li>
+<li> The JWIG runtime system provides a simple REST/HTTP-friendly mapping from requests to code
+and tight coupling between code that generates forms and code that receives form field values.
+</li>
+<li> JWIG helps managing session state, caching, XHTML events,
+push-based page updates, and post-redirect-get.
+</li>
+<li> The JWIG program analyzer checks a range of correctness properties at compile time,
+for example ensuring that all XML data being generated is valid XHTML 1.0.
+</li>
+</ul>
+</p>
+
+<p>
+This document describes the design and capabilities of JWIG and is intended to make it
+possible for others to play with the system. JWIG has many interesting connections to
+other web programming frameworks; however those connections are <i>not</i>
+the focus of this document.
+The JWIG 2.0 implementation builds upon <a href="http://tomcat.apache.org/">Tomcat</a> and other widely used Java tools,
+such as <a href="http://ant.apache.org/">Ant</a>, <a href="http://www.hibernate.org/">Hibernate</a>,
+<a href="http://logging.apache.org/log4j/1.2/">log4j</a>, and
+<a href="http://java.sun.com/products/javamail/">JavaMail</a>.
+The version of JWIG described here supersedes all previous releases of JWIG and is not
+designed to be directly backward compatible (although the main ideas from previous releases
+are still present). For more information about the design of JWIG, see the paper
+<a href="http://cs.au.dk/~amoeller/papers/jwig2/"><i>JWIG: Yet Another Framework for Maintainable and Secure Web Applications</i></a>.
+</p>
+
+<div class="highlight">
+The javadoc <a href="http://www.brics.dk/JWIG/doc/"><b>JWIG API</b></a> documentation supplements this user manual
+by describing more details of all the classes and method in the JWIG API.
+</div>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:helloworld">Hello World!</h1>
+
+<div class="highlight">
+For instructions on how to <b>install</b> JWIG,
+go to the JWIG web page at
+<pre class="center"><a href="http://www.brics.dk/JWIG/">http://www.brics.dk/JWIG/</a></pre>
+and download either the kickstart file (which contains a basic JWIG
+application) or the full JWIG source package (open source, LGPL license), and then read the
+<a href="http://www.brics.dk/JWIG/INSTALL"><tt>INSTALL</tt></a> file.
+</div>
+
+<p>
+We naturally begin with the JWIG variant of the ubiquitous <i>Hello World</i> program:
+</p>
+<example><caption><tt>Main.xact</tt> - a tiny JWIG program</caption>
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+public class Main extends WebApp {
+
+  public XML hello() {
+    return [[
+      &lt;html>
+        &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+        &lt;body>Hello World&lt;/body>
+      &lt;/html>
+    ]];
+  }
+}
+</example>
+
+<p>
+(In the following examples, we omit the <tt>import</tt> declarations.)
+Compile and deploy, for example with <tt>ant compile</tt> and <tt>ant deploy</tt>
+using the Ant build file from <tt>kickstart.zip</tt>. Note that this source file contains
+<xact/> syntax, so it must be compiled with the <xact/> compiler (see <ref idref="sec:response"/>).
+Then direct your browser to
+<pre>
+  http://<i>HOST</i>:<i>PORT</i>/<i>TOMCAT-APP</i>/hello
+</pre>
+where <tt><i>HOST</i></tt>, <tt><i>PORT</i></tt>, and <tt><i>TOMCAT-APP</i></tt> should be
+be replaced by the name and port of your web server and the Tomcat application name, according
+to the configuration in <tt>jwig.properties</tt> and <tt>build.xml</tt>.
+You should now see the <tt>Hello World</tt> message.
+This tiny example application demonstrates a number of basic features in JWIG, as explained in the following
+sections.
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:sites_apps_methods">Web apps, web methods, and web sites</h1>
+
+<p>
+Any program written in JWIG has a class named <tt>Main</tt> (default package). In the example above, <tt>Main</tt> extends
+<doc>WebApp</doc> and is called a <b>web app</b>.
+When the JWIG runtime system starts, a single instance of the web app is created.
+</p>
+
+<p>
+Each public method in the web app class is a <b>web method</b> that can be accessed via a HTTP GET request,
+as in the Hello World example above. Since web methods are associated to GET requests, they should
+be <a href="http://en.wikipedia.org/wiki/HTTP#Safe_methods"><i>safe</i></a> and <a href="http://en.wikipedia.org/wiki/HTTP#Idempotent_Methods_and_Web_Applications"><i>idempotent</i></a>,
+as required by the <a href="http://www.w3.org/Protocols/rfc2616/rfc2616.html">HTTP specification</a>. Web methods
+generate values that are returned to the client. Depending on the return type of the web method, the behavior
+of the web method may be to send an XHTML page (<ref idref="sec:xml_generation"/>) to the client, to redirect a client 
+to another page (<ref idref="sec:redirection"/>) or to send plain text (<ref idref="sec:plaintext"/>).
+</p>
+
+<p>
+The <tt>Main</tt> class can alternatively extend <doc>WebSite</doc>, which is used
+for a <b>web site</b> that consists of <i>multiple</i> web apps.
+Example:
+</p>
+<example><caption><tt>Main.java</tt> - a web site consisting of two web apps</caption>
+public class Main extends WebSite {
+
+  public void init() {
+    add(new examples.GuessingGame());
+    add(new examples.QuickPoll());
+  }
+}
+</example>
+<p>
+When a web site is started, its <doc ref="dk/brics/jwig/WebSite.html#init()">init</doc> method is invoked.
+In this method, each web app is created and
+added to the web site using the <doc ref="dk/brics/jwig/WebSite.html#add(dk.brics.jwig.WebApp)">add</doc> method.
+Web methods are, using the default configuration, invoked as
+<pre>
+  http://<i>HOST</i>:<i>PORT</i>/<i>TOMCAT-APP</i>/<i>WEBAPP-CLASS</i>/<i>WEBMETHOD</i></pre>
+where <tt><i>HOST</i></tt>, <tt><i>PORT</i></tt>, and <tt><i>TOMCAT-APP</i></tt> are as before.
+<tt><i>WEBAPP-CLASS</i></tt> is the web app class name with '<tt>/</tt>' instead of dots
+(e.g. <tt>examples/GuessingGame</tt> in the example above), and
+<tt><i>WEBMETHOD</i></tt> is the web method name.
+The mapping from URLs to web methods can be configured as explained in <ref idref="sec:requests"/>.
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:response">Generating responses</h1>
+
+<p>
+Web methods can return values of various types, which affects the behavior of the clients.
+We now describe the basic return types and the corresponding client behavior.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:xml_generation">Returning XML generated using <xact/></h2>
+
+<p>
+Web methods typically produce XHTML output, which is sent to the client to be shown in a browser window.
+A key constituent of JWIG is the <xact/> XML transformation language.
+This section provides a short introduction to <xact/>.
+</p>
+
+<p>
+<xact/> is a general tool for transforming XML data. We here focus on its capabilities for constructing XHTML
+documents dynamically.
+</p>
+
+<div class="highlight">
+For more information about <b><xact/></b>, see <a href="http://www.brics.dk/Xact/"><tt>http://www.brics.dk/Xact/</tt></a>.
+</div>
+
+<p>
+An <b>XML template</b> is a fragment of an XML document that may contain unspecified pieces called <i>gaps</i>.
+These gaps can be filled with strings or other templates to construct larger templates and
+complete XML (typically XHTML) documents.
+XML templates are represented in the JWIG program by values of the <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/XML.html"><tt>XML</tt></a> type.
+XML values are immutable, that is, all operations that manipulate XML templates create new values
+without modifying the input values.
+
+XML template constants are written as plain XML text enclosed in double square brackets.
+For example, the following line declares a variable to contain XML template values and initializes it
+to a simple constant value:
+</p>
+<example><caption>An XML variable and a simple template constant</caption>
+XML hello = [[Hello &lt;i>World&lt;/i>!]];
+</example>
+<p>
+XML template constants must be well-formed, that is, the tags must be balanced and nest properly.
+Implicitly, JWIG sets the default namespace to <tt>http://www.w3.org/1999/xhtml</tt> (the XHTML 1.0 namespace).
+This can be changed with ordinary XML namespace declarations.
+</p>
+
+<p>
+A <b>code gap</b> in an XML template is written using the syntax <tt>&lt;{<i>code</i>}></tt>
+where the content is a Java expression:
+</p>
+<example><caption>XML template with code gaps</caption>
+String title = "JWIG";
+
+XML getMessage() {
+  return [[Hello &lt;b>World&lt;/b>]];
+}
+
+XML hello = [[
+  &lt;html>
+    &lt;head>&lt;title>&lt;{title}>&lt;/title>&lt;/head>
+    &lt;body>
+      &lt;{getMessage()}>
+    &lt;/body>
+  &lt;/html>
+]];
+</example>
+<p>
+These gaps can be placed within text and tags, as if they were themselves tags.
+Gaps placed like this are called <i>template gaps</i>.
+When executed, the code in the code gaps is evaluated, and the resulting values
+are inserted in place of the gaps.
+</p>
+
+<p>
+Code gaps can also be placed as the values of attributes. For example,
+<tt>&lt;a href={foo()}></tt> is an anchor start tag whose <tt>href</tt> attribute has a value
+obtained by invoking the method <tt>foo</tt>.
+Gaps placed like this are called <i>attribute gaps</i>.
+</p>
+
+<p>
+A <b>named gap</b> is written using the syntax <tt>&lt;[<i>name</i>]></tt>. The gap name must be a legal Java identifier.
+Named gaps can also be placed inside tags, as the values of attributes.
+
+For example, <tt>&lt;a href=[LINK]></tt> is an anchor start tag whose <tt>href</tt> attribute is a
+gap named <tt>LINK</tt>.
+</p>
+
+<p>
+Named gaps are filled using the <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/XML.html#plug(java.lang.String, java.lang.Object)"><tt>plug</tt></a> operator:
+</p>
+<example><caption>Building XML templates using <tt>plug</tt></caption>
+XML hello1 = [[&lt;p align=[ALIGNMENT]>Hello &lt;[WHAT]>!&lt;/p>]];
+XML hello2 = hello1.plug("WHAT", [[&lt;i>&lt;[THING]>&lt;/i>]]);
+XML hello3 = hello2.plug("THING", "World").plug("ALIGNMENT", "left");
+</example>
+<p>
+After executing this code, the values of the variables will be:
+<pre>
+  hello1:  &lt;p align=[ALIGNMENT]>Hello &lt;[WHAT]>!&lt;/p>
+  hello2:  &lt;p align=[ALIGNMENT]>Hello &lt;i>&lt;[THING]>&lt;/i>!&lt;/p>
+  hello3:  &lt;p align="left">Hello &lt;i>World&lt;/i>!&lt;/p>
+</pre>
+</p>
+
+<p>
+As can be seen from the example, both strings and XML templates can be plugged into template gaps.
+However, only strings may be plugged into attribute gaps. When a string is plugged into a gap, characters
+that have a special meaning in XML (e.g. <code>&lt;</code> and <code>&amp;</code>) are automatically
+escaped.
+</p>
+<p>
+The plug method allows any object to be plugged into a gap. <xact/> will convert the value into an XML fragment in the
+following way:
+<ul>
+<li>
+If the object implements the <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/ToXMLable.html"><tt>ToXMLable</tt></a> interface then, the <tt>toXML()</tt> method on the object is invoked
+and the return value is plugged into the gap.
+</li>
+<li>Otherwise, the <tt>toString()</tt> method on the object is called and the value is treated as a text string without markup.</li>
+</ul>
+When a web method returns an XML template, all remaining template gaps
+are plugged with empty strings, and all remaining attribute gaps are removed.
+</p>
+
+<div class="highlight">
+The <b>JWIG program analyzer</b> (see <ref idref="sec:analysis"/>) can check - at compile time -
+that the XML documents being generated
+dynamically using <xact/> are always <b>valid XHTML 1.0</b>.
+</div>
+
+<p>
+A common use of named gaps in XML templates is for avoiding redundancy in dynamic XML construction,
+for example when many XHTML pages use the same overall structure:
+</p>
+<example><caption>XHTML wrapper</caption>
+XML my_xhtml_wrapper = [[
+  &lt;html>
+    &lt;head>&lt;title>&lt;[TITLE]>&lt;/title>&lt;/head>
+    &lt;body>
+      &lt;h1>&lt;[TITLE]>&lt;/h1>
+      &lt;[BODY]>
+    &lt;/body>
+  &lt;/html>
+]];
+
+XML page1 = my_xhtml_wrapper.plug("TITLE", "one")
+  .plug("BODY", [[This is &lt;b>one page&lt;/b>]]);
+
+XML page2 = my_xhtml_wrapper.plug("TITLE", "two")
+  .plug("BODY", [[This is &lt;b>another page&lt;/b>]]);
+</example>
+
+<p>
+Instead of inlining a template in a JWIG program, an XML template constant can be placed in an
+external file and loaded into the program at runtime using, for example,
+<tt>XML.parseTemplateResource(<i>class</i>,<i>name</i>)</tt> where <tt><i>class</i></tt> is a java class object used to locate
+the resource and <tt><i>name</i></tt> is a resource name. See the documentation of
+<a href="http://docs.oracle.com/javase/6/docs/api/java/lang/Class.html#getResourceAsStream(java.lang.String)"><tt>Class</tt></a> for
+more information on how class resources are located.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h3>Compiling <xact /> programs</h3>
+
+<p>
+Because of the non-Java syntax, files containing XML template constants <tt>[[</tt>...<tt>]]</tt>
+must be desugared using the <xact/> compiler. Note that such files typically have
+extension <tt>.xact</tt> instead of <tt>.java</tt>.
+The compiler can be invoked from the command line using the following command:
+<pre>
+  java -classpath xact.jar dk.brics.xact.compiler.Main *.xact</pre>
+See also the Ant build file <tt>build.xml</tt> in the JWIG kickstart file.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:redirection">Redirecting the client</h2>
+
+<p>
+One alternative to returning XML data is to redirect to another web resource by returning a URL.
+As an example, when invoking the following web method, the response is a redirection to
+the given URL:
+</p>
+<example><caption>Response redirection</caption>
+public URL redirect() {
+  return new URL("http://www.brics.dk/JWIG/");
+}
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:plaintext">Returning plain text</h2>
+
+<p>
+Web methods can return plain text (media type text/plain) instead of XML or redirecting,
+simply by returning a string instead of an <code>XML</code> value or a URL:
+</p>
+<example><caption><tt>HelloWorld2.java</tt> - returning plain text</caption>
+public class HelloWorld2 extends WebApp {
+
+  public String hello() {
+    return "Hello World";
+  }
+}
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:servlets">Returning binary data using low-level servlet input/output</h2>
+
+<p>
+Raw binary data can be sent via the low-level Servlets API. JWIG gives access to the underlying
+<tt>HttpServletRequest</tt> or <tt>HttpServletResponse</tt> object using the
+<doc ref="dk/brics/jwig/WebContext.html#getServletRequest()">getServletRequest</doc>
+and <doc ref="dk/brics/jwig/WebContext.html#getServletResponse()">getServletResponse</doc> methods. 
+A web method that uses the low-level framework should be defined as a high priority filter (see <ref idref="sec:filters"/>) to avoid
+interfering with the JWIG system. The <tt>HttpServletResponse</tt> object provides further access to an <tt>OutputStream</tt>
+object, which makes it possible to write raw data directly to the client. As an example, the following (very insecure!) web method allows the
+client to read a file from the server:
+</p>
+<example><caption><tt>ReadFile.java</tt> - writing binary data</caption>
+public class ReadFile extends WebApp {
+
+  @Priority(PRE_CACHE)
+  public void read(String fileName) throws IOException {
+    getResponse().setContentType("audio/mid");
+    FileInputStream in = new FileInputStream(fileName);
+    HttpServletResponse res = getServletResponse();
+    OutputStream out = res.getOutputStream();
+    byte[] buffer = new byte[1024];
+    int length;
+    while ((length = in.read(buf)) != -1) {
+      out.write(buf,length);
+    }
+    in.close();
+    out.close();
+  }
+}
+</example>
+<p>
+The output stream must be closed when the web method has finished writing the data, as in the example, 
+to prevent JWIG from writing additional data to the client.
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:requests">Requests and parameters</h1>
+
+<p>
+Web methods can receive parameters, such as form data fields, that arrive using the most common
+encodings (<tt>application/x-www-form-urlencoded</tt> and <tt>multipart/form-data</tt>).
+Parameters often occur in connection with form submission, as explained in <ref idref="sec:forms"/>.
+</p>
+
+<p>
+The following example shows a web method with a single parameter named <tt>x</tt>:
+</p>
+<example><caption><tt>HelloWorld3.java</tt> - web method parameters</caption>
+public class HelloWorld3 extends WebApp {
+
+  public XML hello(String x) {
+    return [[
+      &lt;html>
+        &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+        &lt;body>
+          The value of the parameter &lt;tt>x&lt;/tt> is: &lt;{ x }>
+        &lt;/body>
+      &lt;/html>
+    ]];
+  }
+}
+</example>
+<p>
+We can invoke this web method by e.g.
+<pre>
+  http://<i>HOST</i>:<i>PORT</i>/<i>TOMCAT-APP</i>/HelloWorld3/hello?x=John+Doe
+</pre>
+</p>
+
+<p>
+Other data types than strings can also easily be received:
+<dl class="bullet">
+<dt>Any class that implements a static <tt>valueOf(String)</tt> method</dt><dd>
+(this includes 
+wrapper classes such as <tt>Integer</tt> and <tt>Boolean</tt>) -
+where <tt>valueOf</tt> is then used
+for creating a value from its string representation. An absent field
+results in the value <tt>null</tt>.</dd>
+<dt>Primitive types (<tt>int</tt>, <tt>boolean</tt>, etc.)</dt><dd>- parsed by invoking the standard Java functions, e.g. <tt>Integer.parseInt</tt>.</dd>
+<dt><doc ref="dk/brics/jwig/FileField.html">FileField</doc></dt><dd>- for file uploads (which requires <tt>method="post"</tt> and
+<tt>enctype="multipart/form-data"</tt> in the <tt>form</tt> tag), see <ref idref="sec:forms"/>.</dd>
+<dt><tt>XML</tt></dt>
+<dd>- <xact/> values, parsed via <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/XML.html#parseDocument(java.io.InputStream)"><tt>XML.parseDocument</tt></a>.</dd>
+<dt><doc ref="dk/brics/jwig/persistence/Persistable.html">Persistable</doc></dt><dd>- see <ref idref="sec:persistence"/>.</dd>
+<dt>Arrays (of the above kinds)</dt><dd>- for receiving multiple parameters of the same name
+(the array may be empty but is never <tt>null</tt>).</dd>
+<dt><tt>Collection&lt;E&gt;</tt>, or subclasses, where <tt>E</tt> is of the above kinds. </dt><dd>- for receiving multiple parameters of the same name</dd>
+<dt><doc ref="dk/brics/jwig/Parameters.html">Parameters</doc></dt><dd>- matching <i>any</i> collection of parameters. If a web method declares
+  an argument of type <tt>Parameters</tt> all request parameters that are not matched by the preceding
+  arguments on the list of formal method parameters are represented using the <tt>Parameters</tt> object.</dd>
+</dl>
+</p>
+
+<p>
+To make the parameter names of web methods accessible by the JWIG runtime system, either
+the code must be compiled with debug information, i.e. with option <tt>-g</tt>, or
+the <doc ref="dk/brics/jwig/ParamName.html">@ParamName</doc> annotation must be used on <i>each</i> parameter of the method.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:urlpattern">Mapping from URLs to code</h2>
+
+<p>
+The mapping from URLs to web apps, web methods and parameters can be configured using the
+<doc ref="dk/brics/jwig/URLPattern.html">@URLPattern</doc> annotation, which allows
+"<a href="http://en.wikipedia.org/wiki/Representational_State_Transfer">REST</a>-style" URLs:
+</p>
+<example><caption>Configuring URL to code mapping</caption>
+@URLPattern("app4")
+public class HelloWorld4 extends WebApp {
+
+  @URLPattern("h/$x")
+  public XML hello(String x) {
+    return [[
+      &lt;html>
+        &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+        &lt;body>
+          The value of the parameter &lt;tt>x&lt;/tt> is: &lt;{ x }>
+        &lt;/body>
+      &lt;/html>
+    ]];
+  }
+}
+</example>
+<p>
+The <tt>hello</tt> method can now be invoked by e.g.
+<pre>
+  http://<i>HOST</i>:<i>PORT</i>/<i>TOMCAT-APP</i>/app4/h/117</pre>
+whereas the default mapping
+described in <ref idref="sec:sites_apps_methods"/> would require
+<pre>
+  http://<i>HOST</i>:<i>PORT</i>/<i>TOMCAT-APP</i>/HelloWorld4/hello?x=117</pre>
+</p>
+<p>
+A URL pattern is generally a set of <i>choices</i>, separated by '<tt>|</tt>'.
+Each choice is a sequence of <i>steps</i>, separated by <tt>/</tt>.
+A step can be:
+<dl>
+<dt>a string (not containing a separator)</dt>
+<dd>- matching that string.</dd>
+<dt><tt>*</tt></dt>
+<dd>- matching any string not containing '<tt>/</tt>'.</dd>
+<dt><tt>**</tt></dt>
+<dd>- matching any string (which may contain '<tt>/</tt>').</dd>
+<dt><tt>$<i>foo</i></tt></dt>
+<dd>- matching any string not containing '<tt>/</tt>' and binding the string
+to the request parameter named <tt><i>foo</i></tt>.</dd>
+</dl>
+Request parameters specified using <tt>$<i>foo</i></tt> are merged with those
+supplied using the ordinary query string and request body mechanisms.
+</p>
+<p>
+The URL patterns on <tt>WebApp</tt> classes must begin with a constant string, 
+and they cannot overlap within the same <tt>WebSite</tt>.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h3>@Priority</h3>
+
+<p>
+Multiple web methods may match a request URL. In this case, the value of the <doc ref="dk/brics/jwig/Priority.html">@Priority</doc>
+annotation determines the order. 
+A default priority is assigned to web methods that have no <tt>@Priority</tt> annotation.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:links">Generating links to web methods</h2>
+
+<p>
+Often, redirection is to another web method within the same web site. The family of
+<doc ref="dk/brics/jwig/WebContext.html#makeURL(java.lang.String, java.lang.Object...)">makeURL</doc> methods makes it easy to construct such URLs:
+</p>
+<example><caption>Response redirection to another web method</caption>
+    public URL redirect2() {
+      return makeURL("hello");
+    }
+
+    public XML hello() {
+      return [[
+        &lt;html>
+          &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+          &lt;body>Hello World&lt;/body>
+        &lt;/html>
+      ]];
+    }
+</example>
+<p>
+The string parameter to <tt>makeURL</tt> is the name of the web method in the URL. The <tt>makeURL</tt> method
+will inspect the web method and generate a URL with the format given in the
+<doc ref="dk/brics/jwig/URLPatern.html">@URLPattern</doc> (or the default pattern if no annotation is given for the web method).
+This makes it straightforward to change the URL of a web method without changing all the places that link to the web method.
+</p>
+<p>
+Parameters (see <ref idref="sec:requests"/>) can be added simply as extra arguments to the <tt>makeURL</tt> method.
+JWIG will then automatically serialize the parameters depending on the type of the object. See <ref idref="sec:requests"/>
+for more information about which types are supported.
+</p>
+<p>
+The following example modifies the Hello World example to take an additional parameter <tt>who</tt>, which is plugged into the
+greeting returned. The <tt>hello</tt> web method declares this parameter to be of type <tt>String</tt>. The <tt>redirect3</tt>
+web method generates a URL to <tt>hello</tt> with the <tt>who</tt> argument simply by passing the value as a parameter to <tt>makeURL</tt>:
+</p>
+<example><caption>Response redirection to another web method including a parameter</caption>
+    public URL redirect3() {
+      return makeURL("hello", "World");
+    }
+
+    public XML hello(String who) {
+      return [[
+        &lt;html>
+          &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+          &lt;body>Hello &lt;{who}&gt;&lt;/body>
+        &lt;/html>
+      ]];
+    }
+</example>
+
+<p>
+See <ref idref="sec:sessions" /> for another example where <tt>makeURL</tt> is used in combination with parameters of other types.
+</p>
+<p>
+The <tt>makeURL</tt> method takes an optional <tt>Class</tt> parameter identifying the web app containing the target web method.
+If no such argument is given, <tt>makeURL</tt> assumes that the web method is located
+within the same web app as the method that generates the URL.
+</p>
+<p>
+Finally, <tt>makeURL</tt> takes an optional boolean parameter determining whether the generated link will point to a
+secure (HTTPS) or insecure (HTTP) URL.
+If no boolean value is given, <tt>makeURL</tt> will generate a secure URL if the current
+request is to a secure URL.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:webappparams">Web app parameters</h2>
+
+<p>
+Parameters can also be given to web apps, not only to the individual web methods.
+This is controlled using <tt>@URLPattern</tt> annotations (see <ref idref="sec:urlpattern"/>) on the web app classes.
+A web app parameter is passed as part of any link created by <tt>makeURL</tt> from one web method to another within the same web app.
+This gives a convenient way to manage a context that needs to be available to multiple web methods in a web app.
+</p>
+<p>
+In the following example, the <tt>who</tt> parameter has been changed to a web app parameter. If the user sends a request
+to <tt>myapp/World/redirect4</tt>, the <tt>redirect</tt> method will redirect the client to <tt>myapp/World/hello</tt>.
+</p>
+
+<example><caption>Response redirection to another web method including a parameter</caption>
+@URLPattern("myapp/$who")
+public class HelloApp extends WebApp {
+  public URL redirect4() {
+    return makeURL("hello");
+  }
+
+  public XML hello() {
+    String who = getWebAppParameter("who");
+    return [[
+      &lt;html>
+        &lt;head>&lt;title>JWIG&lt;/title>&lt;/head>
+        &lt;body>Hello &lt;{who}&gt;&lt;/body>
+      &lt;/html>
+    ]];
+  }
+}
+</example>
+<p>
+A special version of the <doc ref="dk/brics/jwig/WebContext.html#makeURL(java.util.Map, java.lang.String, java.lang.Object...)">makeURL</doc> 
+method takes a map from parameter names to values, which makes it easy to pass web app parameters between web methods.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:forms">XHTML forms</h2>
+
+<p>
+Ordinary web methods respond to HTTP GET requests, as explained earlier.
+The response can be an XHTML page containing a form.
+The JWIG <doc ref="dk/brics/jwig/SubmitHandler.html">SubmitHandler</doc> class allows the application to receive values
+from form submissions. This promotes a programming style where the program code that
+produces the form becomes tightly coupled with the code that receives the field values, which makes it easy for readers
+of the code to follow the application flow.
+
+Here is an example of a web method that produces a form and receives a text field and an uploaded file:
+</p>
+<example><caption><tt>Upload.xact</tt> - a file upload form</caption>
+public class Upload extends WebApp {
+
+  XML wrapper = [[
+    &lt;html>
+      &lt;head>&lt;title>Upload&lt;/title>&lt;/head>
+      &lt;body>
+        &lt;[BODY]>
+      &lt;/body>
+    &lt;/html>
+  ]];
+
+  public XML upload() {
+    return wrapper.plug("BODY", [[
+      &lt;form method="post" enctype="multipart/form-data" action=[ACTION]>
+        Enter some text: &lt;input type="text" name="t"/> &lt;br/>
+        Upload a file: &lt;input type="file" name="f"/> &lt;br/>
+        &lt;input type="submit" value="Go!"/>
+      &lt;/form>
+    ]].plug("ACTION",
+      new SubmitHandler() {
+        public XML run(String t, FileField f) {
+          return wrapper.plug("BODY", [[
+            Your text: &lt;{ t }> &lt;br/>
+            Size of your file: &lt;{ f.getSize() }>
+          ]]);
+        }
+    });
+}
+</example>
+
+<p>
+This <tt>SubmitHandler</tt> class contains a <tt>run</tt> method that processes the form
+field values. Similarly to web methods, the response of this method can have various types:
+</p>
+<dl>
+<dt><tt>XML</tt></dt>
+<dd>- (as in the example above) an XML value that is sent directly back to the client.</dd>
+<dt><tt>URL</tt></dt>
+<dd>- resulting in a redirection to the given location using the
+<a href="http://en.wikipedia.org/wiki/Post/Redirect/Get">POST-redirect-GET</a> pattern.</dd>
+<dt><tt>void</tt></dt>
+<dd>- resulting in a redirection to the URL of the web method that led to the
+<tt>SubmitHandler</tt> class.</dd>
+</dl>
+<p>
+The latter case is useful in combination with the ability of <i>modifying</i>
+an existing web page, as shown in
+the example application <exampleapp idref="sec:guessinggame">GuessingGame</exampleapp>.
+</p>
+<p>
+<tt>SubmitHandler</tt> objects are subject to regeneration; see <ref idref="sec:regeneration"/>.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:filters">Filters and user authentication</h2>
+
+<p>
+A <em>filter</em> is a web method with return type <tt>void</tt>, that is, a web method that may do something on the server but
+generates no value to return to the client. 
+The default priority of a filter is higher than that of the <tt>cache</tt> method, which means
+that filters are processed before the caching mechanism explained in
+<ref idref="sec:caching"/> is applied. By default, filters match GET and POST requests,
+but they may be annotated to match to any request type.
+</p>
+<p>
+Filters return no value and therefore they must pass control on to another web method, which can then in turn
+generate the response. The <doc ref="dk/brics/jwig/WebContext.html#next()">next</doc> method matches the
+request URL with the next web method on the prioritized list of matching web methods.
+</p>
+
+<p>
+While filters do not return values, they may still interrupt the request processing using exceptions. 
+This is convenient for authentication and other security checks.
+<ref idref="sec:misc"/> describes the use of exceptions (and also cookies, which may be
+used for another kind of user authentication). The following filter matches all request URLs
+(using <tt>@URLPattern</tt>) and returns an error if an insecure connection
+is used (that is, without SSL/TLS) and a HTTP Basic authentication "authorization required"
+message if the right user credentials are not provided:
+</p>
+<example><caption>HTTP Basic authentication</caption>
+    @URLPattern("**")
+    public void accessBasic() {
+      if (!isSecure)
+        throw new AccessDeniedException("Connection is insecure!")
+      User u = getUser();
+      if (u == null || !u.getUsername().equals("smith") || 
+          !u.getPassword().equals("42"))
+        throw new AuthorizationRequiredException("JWIG examples");
+      next();
+    }
+</example>
+
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:web_services">XML web service programming</h2>
+
+<p>
+JWIG support all HTTP methods for JWIG web methods, and <xact /> can easily be used to generate any kind
+of XML. This allows web methods to implement REST-style web services in a straightforward manner.
+Web methods are simply annotated with <doc ref="dk/brics/jwig/GET.html">@GET</doc>, <doc ref="dk/brics/jwig/POST.html">@POST</doc>,
+<doc ref="dk/brics/jwig/PUT.html">@PUT</doc>, <doc ref="dk/brics/jwig/DELETE.html">@DELETE</doc> etc. to indicate which
+request kinds the web method should respond to. More than one HTTP method annotation may be set on a single web method.
+The default is <tt>@GET</tt>.
+Consider the following example:
+</p>
+
+<example><caption>Web service example</caption>
+  @PUT
+  public URL store(String s) {
+      // implementation omitted
+  }
+</example>
+<p>
+JWIG will invoke this web method only if a matching PUT request is sent from the client.
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:caching">Caching</h1>
+
+<p>
+JWIG defines a web method that automatically caches all responses generated by web methods with lower priority than the
+<doc ref="dk/brics/jwig/WebContext.html#CACHE_PRIORITY">CACHE_PRIORITY</doc>.
+HTTP <tt>ETag</tt> and <tt>Last-Modified</tt> headers are
+automatically inserted to support client-side caching. Additionally, a built-in web method
+(<doc ref="dk/brics/jwig/WebContext.html#cache(dk.brics.jwig.Parameters)">cache</doc>) handles server caching
+and conditional GET requests.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:cacheinvalidation">Invalidating cached pages</h2>
+
+<p>
+Occasionally, the programmer needs to invalidate cached pages because some data has been changed. JWIG uses an explicit
+representation of the relationship between data objects and cached pages to enable such invalidation.
+</p><p>
+JWIG maintains a dependency map from data objects to pages that depend on them. To add a dependency for the current page on an object, use the
+<doc ref="dk/brics/jwig/WebContext.html#addResponseInvalidator(java.lang.Object)">addResponseInvalidator</doc> method. When the data object
+is changed, the <doc ref="dk/brics/jwig/WebContext.html#update(java.lang.Object)">update</doc> method must be called for JWIG
+to invalidate all cached pages that depend on the object.
+</p><p>
+The database system (<ref idref="sec:persistence"/>) integrates with this mechanism. When a data object is used as a parameter to a web method,
+<doc ref="dk/brics/jwig/WebContext.html#addResponseInvalidator(java.lang.Object)">addResponseInvalidator</doc> is automatically called with this object.
+Also, when an object is updated in the database, the <doc ref="dk/brics/jwig/WebContext.html#update(java.lang.Object)">update</doc> update method is called automatically.</p>
+<p>
+<div class="highlight">
+The example applications in <ref idref="sec:examples"/> show how to use <tt>addResponseInvalidator</tt>.
+</div>
+</p>
+
+<!--
+<h3>On equality of objects</h3>
+
+<p>
+The <doc ref="dk/brics/jwig/WebContext.html#addResponseInvalidator(java.lang.Object)">addResponseInvalidator</doc> and
+<doc ref="dk/brics/jwig/WebContext.html#update(java.lang.Object)">update</doc> methods use the Java Collection framework
+and therefore require correct implementation of the <tt>hashCode</tt> and <tt>equals</tt> methods if those methods are overriden.
+In particular, objects that are equal should have the same hash code, and the hash code should not change over time.
+</p>
+-->
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:cachedisable">Disabling the cache</h2>
+
+<p>
+The cache can be disabled for a web method by assigning a priority to the web method that is higher than the priority
+of the <doc ref="dk/brics/jwig/WebContext.html#cache(dk.brics.jwig.Parameters)">cache</doc> filter. 
+The <doc ref="dk/brics/jwig/WebContext.html">WebContext</doc> class defines such a constant value
+<doc ref="dk/brics/jwig/WebContext.html#PRE_CACHE">PRE_CACHE</doc>.
+</p>
+<p>
+See also <ref idref="sec:filters"/> about filters. Filters always have a priority above the cache.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:regeneration">Handler regeneration</h2>
+
+<p>
+Handlers (that is, <tt>SubmitHandler</tt> objects, see <ref idref="sec:forms"></ref>, 
+<tt>XMLProducer</tt> objects, see <ref idref="sec:view_updates"></ref>, and <tt>EventHandler</tt> objects, 
+see <ref idref="sec:html_events"></ref>) may be removed from the server as a result of cache eviction or restart of the web server.
+Therefore, JWIG may need to regenerate a handler in order to process a request.
+</p>
+<p>
+A handler can be regenerated in two different ways: <em>recreation</em> or <em>rediscovery</em>.
+</p>
+<dl>
+<dt>Recreation:</dt>
+<dd>
+JWIG recreates a handler by sending a new GET request to the URL that originally created the evicted handler.
+Consequently, the application programmer must make sure that such a GET request results a <em>valid recreation</em>
+of the handler. A handler <tt>a</tt> is a valid recreation of an evicted handler <tt>b</tt> if <tt>a.equals(b)</tt> is true. 
+The implementation of all subclasses of <doc ref="dk/brics/jwig/AbstractHandler.html">AbstractHandler</doc> satisfies 
+this property, provided that the property also holds for each of the objects in its list of dependencies
+(see <doc ref="dk/brics/jwig/AbstractHandler.html#AbstractHandler(java.lang.Object...)">AbstractHandler</doc>).
+</dd>
+<dt>Rediscovery:</dt>
+<dd>
+Handlers can be rediscovered if they are constructed in a web method that creates a <tt>Session</tt>
+object or takes one as a parameter (see <ref idref="sec:sessions"/>). Such handlers are called <em>session bound</em> handlers.
+See <ref idref="sec:guessinggame"/> for an example of a session bound handler.
+</dd>
+</dl>
+
+<p>
+Unless session bound, a handler can only be regenerated if:
+<ul>
+<li>
+it is recreated as a result of sending a request to the original URL, and
+</li>
+<li>
+it is not returned as part of an XML document created by <em>another handler</em>
+(since such a recreation would require a POST request with possible side effects).
+</li>
+</ul>
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:sessions">Session state</h1>
+
+<p>
+The class <doc ref="dk/brics/jwig/Session.html">Session</doc> makes it easy to encapsulate session
+state and transparently pass the data to web methods that are later invoked by the client.
+</p>
+
+<p>
+A subclass of <tt>Session</tt> contains the session data. Session objects can be
+passed to other web methods through parameter passing. JWIG automatically provides a session ID to
+each session object. The following example illustrates a typical use:
+</p>
+
+<example><caption>Sessions</caption>
+  class UserState extends Session {
+    List&lt;Item> shopping_cart; // contains user state
+  }
+
+  public URL entry() {
+    UserState s = new UserState();
+    ... // initialize the new session
+    return makeURL("shopping", s);
+  }
+
+  public XML shopping(UserState s) {
+    ... // s contains the session state
+  }
+</example>
+
+<p>
+This mechanism avoids the pitfalls of traditional String-to-Object session maps that can be difficult to maintain
+by the application programmer.
+</p>
+
+<p>
+A session management thread keeps track of the mapping from session IDs to session
+objects (via <tt>toString</tt> and <tt>valueOf</tt>; see <ref idref="sec:requests"/>) and automatically garbage
+collects session objects that have not been
+accessed in some time (as configured in the <tt>Session</tt> constructor).
+If <tt>jwig.auto_refresh_sessions</tt> is set (see <ref idref="sec:configuration"/>),
+session objects are automatically being refreshed regularly (using some JavaScript code) as long as some user is viewing
+a page holding the session object. This means that it is in most cases unnecessary to
+write things like "this session will timeout after N minutes, so make sure to submit your form data
+in time".
+</p>
+
+<div class="highlight">
+The <exampleapp idref="sec:guessinggame">GuessingGame</exampleapp> example demonstrates the use of session state.
+</div>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:clientside">Client side programming</h1>
+
+<p>
+While the JWIG framework is server-based and all computation of the web apps takes place on the server side,
+it is possible to create dynamic applications in JWIG by using two primitives: the ability to automatically push updates 
+of data to the clients, and the ability to capture XHTML events. 
+This model often makes it unnecessary for the programmer to write any JavaScript code.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:view_updates">Automatic view updates</h2>
+
+<p>
+JWIG makes it possible to update the XML contents of a page while it is being shown at the client side.
+These updates are automatically propagated to
+the clients using a built-in Comet/AJAX system.
+</p>
+<p>
+An <doc ref="dk/brics/jwig/XMLProducer.html">XMLProducer</doc>
+is responsible for generating a fragment of the XML data that may be updated and propagated to the client at any time.
+The <code>XMLProducer</code> must implement a <code>run</code>
+method that is used to generate its content.
+Data objects that the <code>XMLProducer</code> depend on are given as arguments to the constructor.
+When those data objects are changed (see the <tt>update</tt> method in <ref idref="sec:caching" />), 
+the <tt>run</tt> method is invoked, and the resulting XML data is sent to all clients viewing the data.
+</p>
+<p>
+The following example mimics a page with a highscore for a game. Whenever the highscore is changed, the
+database system notifies the <code>XMLProducer</code> to invalidate its current value.
+The <code>XMLProducer</code> is then executed again and the new value is sent to the client.
+</p>
+<example><caption><code>XMLProducer</code> example</caption>
+  public void ajaxy() {
+    XML page = ...;
+    page = page.plug("NAME", new XMLProducer() {
+      public XML run() {
+        HighScore highscore = Game.getCurrentGame().getHighScore();
+        addResponseInvalidator(highscore);
+        return highscore.getName();
+      }
+    });
+  }
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:html_events">XHTML events</h2>
+
+<p>
+The <doc ref="dk/brics/jwig/EventHandler.html">EventHandler</doc> class is used to respond to client side XHTML events.
+It can be plugged into any XHTML attribute where an XHTML event handler is expected. The <code>EventHandler</code> must contain 
+a <code>run</code> method that is responsible
+for handling the event on the server side. This run method is able to take parameters just like a <code>SubmitHandler</code>.
+The following example shows an <code>EventHandler</code> that responds to <code>onClick</code> events:
+</p>
+<example><caption><code>EventHandler</code> example</caption>
+  XML x = [[...&lt;input type="button" value="Click me" onClick=[HANDLER] &gt;...]]
+    .plug("HANDLER", new EventHandler() {
+      public void run() {
+        log.info("User clicked the button");
+      }
+  });
+</example>
+
+<p>
+<tt>EventHandler</tt> objects are subject to regeneration; see <ref idref="sec:regeneration"/>.
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:configuration">Configuration</h1>
+
+<p>
+JWIG uses a common configuration system that allows properties to be specified
+declaratively in a separate file and operationally at runtime.
+First, properties can be written in the file <tt>jwig.properties</tt>, as this example:
+<pre>
+  jwig.base_url = http://services.brics.dk/java
+  jwig.base_url_secure = https://services.brics.dk/java
+  jwig.hibernate = true
+
+  hibernate.connection.username = jdoe
+  hibernate.connection.password = ToPsEcReT
+  hibernate.connection.url = jdbc:mysql://mysql.cs.au.dk/jdoe
+
+  mail.transport.protocol = smtp
+  mail.host = smtp.nfit.au.dk
+</pre>
+Second, properties can be set (typically during initialization
+of the <tt>WebSite</tt> or <tt>WebApp</tt>) using <doc ref="dk/brics/jwig/WebSite.html#setProperty(java.lang.String,%20java.lang.Object)">setProperty</doc>.
+Properties for the <tt>WebSite</tt> are shared for all web apps and can be
+overridden locally in each <tt>WebApp</tt>. To read a property, use <doc ref="dk/brics/jwig/WebSite.html#getProperty(java.lang.String)">getProperty</doc>.
+The names of JWIG specific properties all begin with <tt>jwig</tt>.
+Note that reasonable defaults have been selected for all properties, so
+simple JWIG applications can be created without explicitly setting any configuration.
+</p>
+<p>
+The <tt>jwig.properties</tt> file must be placed in the base folder of the class loader at runtime (i.e. in the folder containing
+the class files that belong to the default package).
+</p>
+
+<div class="highlight">
+A complete list of <b>JWIG configuration properties</b> is available in the
+<a href="../doc/index.html?dk/brics/jwig/WebSite.html">API documentation of the <tt>WebSite</tt> class</a>.
+</div>    
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:persistence">Persistence with Hibernate</h1>
+
+<div class="highlight">
+<p>
+This section is by no means a complete guide to the Hibernate framework, but merely 
+as a description of how to enable Hibernate for use in JWIG programs.
+</p>
+<p>
+While Hibernate is a powerful framework that requires some work to master, the basics can be learned quickly.
+See the Hibernate Getting Started document at <a href="http://hibernate.org/quick-start.html">http://hibernate.org/quick-start.html</a>
+</p>
+</div>
+Most web apps need to store data externally. For this
+purpose JWIG integrates closely with the Java <a href="http://en.wikipedia.org/wiki/Object-relational_mapping">ORM</a>
+framework <a href="http://www.hibernate.org/">Hibernate</a>. To enable Hibernate you will need a database
+server and a <a href="http://java.sun.com/javase/technologies/database/">JDBC driver</a> for the database.
+Furthermore, mappings between objects and database tables must be specified. Based on these mappings, Hibernate 
+generates SQL for updating and querying the database. All popular databases have their own SQL dialect
+so Hibernate needs to be set up to use the right one. Make sure that your database in on the
+list of <a href="http://www.hibernate.org/80.html">list of supported databases</a>.
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:database_setup">Setting up your database connection and dialect</h2>
+
+<p>
+JWIG defaults to MySQL, so if you use MySQL as your database, you will not need to set the dialect.
+The dialect classes for the most popular databases can be found on this list:
+</p>
+<table border="1">
+<tr><th>Database</th><th>Dialect</th></tr>
+<tr><td>PostgreSQL</td><td><tt>org.hibernate.dialect.PostgreSQLDialect</tt></td></tr>
+<tr><td>Microsoft SQL Server</td><td><tt>org.hibernate.dialect.SQLServerDialect</tt></td></tr>
+<tr><td>Oracle 9i/10g</td><td><tt>org.hibernate.dialect.Oracle9iDialect</tt></td></tr>
+</table>
+<p>
+For the full list, please the refer to the <a href="http://www.hibernate.org/hib_docs/reference/en/html/session-configuration.html#sql-dialects">Hibernate documentation</a>
+</p>
+<p>
+To set the database dialect, use the JWIG configuration property '<tt>hibernate.dialect</tt>'.
+Please refer to <ref idref="sec:configuration"/> for details on configuration.
+</p>
+<p>
+Second you will have to set the class name for your JDBC driver. Again this is done
+for MySQL. If you use another database, please set the property '<tt>hibernate.connection.driver_class</tt>'
+in the same way as above to the qualified name of you driver class. This class name
+can be found on the web site of the JDBC driver.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:username">Setting up username and password</h2>
+
+<p>
+Finally you will need to set the following properties in the JWIG configuration (see <ref idref="sec:configuration"/>):
+<table border="1">
+<tr><th>Property</th><th>Contents</th></tr>
+<tr><td><tt>hibernate.connection.username</tt></td><td>Your database username</td></tr>
+<tr><td><tt>hibernate.connection.password</tt></td><td>Your database password</td></tr>
+<tr><td><tt>hibernate.connection.url</tt></td><td>Connection URL for you database, for example <code>jdbc:mysql://mysql.cs.au.dk/schwarz</code></td></tr>
+<tr><td><tt>jwig.hibernate</tt></td><td>Set this to '<tt>true</tt>' to enable Hibernate support</td></tr>
+</table>
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:querier">Querier</h2>
+
+<p>
+The <doc ref="dk/brics/jwig/persistence/Querier.html">Querier</doc> is central to the Hibernate bridge as it
+allows JWIG to query objects from the database.
+The <tt>Querier</tt> can be obtained through <tt>WebSite.getQuerier()</tt>. It can be used directly by the web app
+code to query objects from the database:
+<example><caption>Object querying</caption>
+User u = getWebSite().getQuerier().getObject(User.class, 1);</example>
+This will return the <tt>User</tt> from the database with <tt>ID</tt> 1 or null if no such user exists. In principle, any ORM framework
+could be supported by implementing appripriate <tt>Querier</tt> classes.
+JWIG provides a single
+implementation of the interface called <doc ref="dk/brics/jwig/persistence/HibernateQuerier.html">HibernateQuerier</doc>.
+This class allows access to objects mapped in the Hibernate framework and it is enabled if the <tt>jwig.hibernate</tt> property is set.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:persistable">Persistable objects</h2>
+
+<p>
+The <doc ref="dk/brics/jwig/persistence/Persistable.html">Persistable</doc> interface allows JWIG to serialize and
+query persisted objects. This interface requires the object to have an ID property of type <tt>Integer</tt>.
+An implementation is provided as <doc ref="dk/brics/jwig/persistence/AbstractPersistable.html">AbstractPersistable</doc>. The ID must
+be unique for the given object within the database.
+JWIG refers to persistable objects by their IDs in e.g. URLs.
+</p>
+<p>
+In Hibernate the class must be <a href="http://www.hibernate.org/hib_docs/reference/en/html/mapping.html">mapped</a>
+and added to the Hibernate framework by accessing the the <tt>Configuration</tt> object
+through the <doc ref="dk/brics/jwig/persistence/HibernateQuerier.html">HibernateQuerier</doc> during initialization of the web site:
+<example><caption>Loading a mapping</caption>
+HibernateQuerier.getConfig().addClass(User.class);</example>
+More advanced queries can be made using the standard Hibernate framework. The session factory
+can be obtained using the static method <tt>HibernateQuerier.getSessionFactory()</tt> and Hibernate
+sessions can be obtained through the <tt>getCurrentSession()</tt> method of this object.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:parameters">Persistable parameters</h2>
+
+<p>
+Persistable objects can be used as parameters to web methods. Persistable objects are serialized through their <tt>getId()</tt> method,
+and JWIG deserializes the objects using the <tt>Querier</tt> interface described above.
+<example><caption>Example of persistable parameter passing</caption>
+  public XML viewUser(User user) {
+    // User (as mapped above) is automatically queried 
+    // from the database and passed as parameter
+  }
+
+//Furthermore, makeURL can create URLs to such methods
+public URL gotoUser(User user) {
+    return makeURL("viewUser", user);
+}</example>
+</p>
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:misc">Miscellaneous convenience features</h1>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:errors">Error reporting and logging</h2>
+
+<p>
+A built in web method takes care of catching
+all exceptions thrown by the ordinary web methods and reporting errors to
+the clients. The following exceptions are particularly relevant:
+<dl>
+<dt><doc ref="dk/brics/jwig/JWIGException.html">JWIGException</doc></dt>
+<dd>- base class for all JWIG runtime exceptions (results in "500 Internal Server Error")</dd>
+<dt><doc ref="dk/brics/jwig/AccessDeniedException.html">AccessDeniedException</doc></dt>
+<dd>- thrown when the client is denied access to a requested resource ("403 Forbidden")</dd>
+<dt><doc ref="dk/brics/jwig/AuthorizationRequiredException.html">AuthorizationRequiredException</doc></dt>
+<dd>- thrown when the client should resend the request with
+HTTP Basic authentication information ("401 Unauthorized"), see <ref idref="sec:filters"/></dd>
+<dt><doc ref="dk/brics/jwig/BadRequestException.html">BadRequestException</doc></dt>
+<dd>- thrown when the HTTP request contains errors ("400 Bad Request")</dd>
+<dt><doc ref="dk/brics/jwig/ServerBusyException.html">ServerBusyException</doc></dt>
+<dd>- thrown when the server is overloaded ("503 Service Unavailable")</dd>
+<dt><doc ref="dk/brics/jwig/persistence/PersistenceException.html">PersistenceException</doc></dt>
+<dd>- thrown if the persistence system is misconfigured ("500 Internal Server Error"),
+see <ref idref="sec:persistence"/></dd>
+<dt><doc ref="dk/brics/jwig/SessionDefunctException.html">SessionDefunctException</doc></dt>
+<dd>- thrown when trying to fetch a non-existing session from the session state manager ("410 Gone")</dd>
+</dl>
+</p>
+<p>
+JWIG uses <a href="http://logging.apache.org/log4j/">log4j</a> for logging, and the JWIG runtime system automatically
+logs many internal events. A <tt><a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">Logger</a></tt>
+object for logging application specific events can be obtained by using the factory method on Logger like this:
+</p>
+<example><caption>Obtaining a logger</caption>Logger log = Logger.getLogger(<i>WEBAPP</i>.class);</example>
+<p>
+where <code><i>WEBAPP</i></code> is the name of your web app class.
+See also the configuration properties (<ref idref="sec:configuration"/>) whose name start with <tt>log4j</tt>. The following
+example writes a message to the log with level <tt>INFO</tt>:
+</p>
+<example><caption>Writing to the log</caption>
+log.info("10-4 Rubber Duck");
+</example>
+<p>
+In some cases it can be expensive to create the string that is printed to the log. In that case,
+test if the log is enabled for the relevant level before generating the string:
+</p>
+<example><caption>Testing log level</caption>
+if (log.isInfoEnabled())
+    log.info(getComplicatedStringThatTakesALongTimeToCompute());
+</example>
+<p>
+Log4j can give fine-grained control of what loggers print. It can be configured at class
+or package (including sub-package) level so that different log levels are used for different
+program parts. The standard JWIG configuration is to set the log level to print all log
+statements of at least level <code>INFO</code> to <tt>System.out</tt>.
+Log4j can be initialized as part of the <tt>init</tt> method of the <tt>WebSite</tt> for
+more fine-grained control of the loggin behavior.
+See this <a href="http://www.laliluna.de/log4j-tutorial.html">
+Log4j tutorial</a> for more information.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:cookies">Cookies</h2>
+
+<p>
+The method <doc ref="dk/brics/jwig/WebContext.html#getCookies()">getCookies</doc> returns a (non-null) array of
+cookies occurring in the request, and <doc ref="dk/brics/jwig/WebContext.html#addCookie(javax.servlet.http.Cookie)">addCookie</doc>
+adds a cookie to the response.
+</p>
+
+<p>
+The following example shows how to use cookies for authentication:
+</p>
+<example><caption>Cookie authentication</caption>
+  @URLPattern("restricted/**")
+  public void accessCookie() {
+    String key = null;
+    for (Cookie c : getCookies())
+      if (c.getName().equals("key"))
+        key = c.getValue();
+    if (key == null || !key.equals("87"))
+      throw new AccessDeniedException("You shall not pass!")
+    next();
+  }
+</example>
+<p>
+Here, <tt>accessCookie</tt> is a filter web method that checks in every request
+matching <tt>restricted/**</tt> whether a cookie named <tt>key</tt> with
+value <tt>87</tt> is provided.
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:emails">Sending emails</h2>
+
+<p>
+JWIG uses <a href="http://java.sun.com/products/javamail/">JavaMail</a> for sending emails:
+</p>
+<example><caption>Emails</caption>
+import javax.mail.*;
+import javax.mail.internet.*;
+import dk.brics.jwig.*;
+
+public class EmailTest extends WebApp {
+
+  public String send() throws MessagingException {
+    Email e = new Email();
+    e.setText("This is a test!");
+    e.setSubject("JWIG email test");
+    e.setSender(new InternetAddress("amoeller@cs.au.dk"));
+    e.addRecipients(Message.RecipientType.TO, "amoeller@cs.au.dk");
+    SendFailedException ex = sendEmail(e);
+    if (ex == null)
+      return "Email sent!";
+    else
+      return ex.toString();
+  }
+}
+</example>
+
+<p>
+Configuration properties (see <ref idref="sec:configuration"/>) whose name start with "<tt>mail.</tt>" are used by JavaMail.
+In <tt>jwig.properties</tt> set e.g.:
+<pre>
+ mail.transport.protocol = smtp
+ mail.host = smtp.nfit.au.dk
+</pre>
+</p>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:debugging">Debugging applications</h2>
+
+You can attach a remote debugger to your JWIG program
+by starting Tomcat with the following options:
+<pre>
+ -Xdebug
+ -Xnoagent -Xrunjdwp:transport=dt_socket,address=127.0.0.1:8000,server=y,suspend=n
+</pre>
+(On Windows, edit the Java Options in 'configure Tomcat'.) You may want to use a different
+value of <tt>address</tt>. Set your IDE to use the same address for remote debugging
+(in Eclipse start the debugger with a Remote Java Application), and you
+can now use the debugger while Tomcat is running.
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:analysis">The JWIG program analysis suite</h1>
+
+<remark>TO DO: update this section with the newest <xact/>/JWIG analyses </remark>
+
+<p>
+The design of JWIG allows some specialized program analyses to be performed, such that the programmer
+can check - at compile time - that certain kinds of errors
+cannot occur at runtime. The JWIG analyzer considers the following properties for a given program:
+<ul>
+<li> <b>show validity:</b> that all pages being shown are valid XHTML 1.0,</li>
+<li> <b>plug consistency:</b> that gaps are present when subjected to the plug operation and
+XML templates are never plugged into attribute gaps,</li>
+<li> <b>form field consistency:</b> that the parameters of form submit handlers and event handlers
+match the form names that occur in the generated XHTML pages,</li>
+<li> <b>URL construction:</b> that values of <tt>@URLPattern</tt> and <tt>makeURL</tt>
+are meaningful, and</li>
+<li> <b>method safety:</b> that web methods and XML producers do not have side effects
+that may influence behavior of the web app.</li>
+<li> <b>regeneration correctness:</b> that the referer page can be reconstructed correctly after system reboot
+and emptying of the cache.</li>
+</ul>
+Additionally, the program analysis can produce a global control-flow graph of a web app
+to visualize its structure.
+</p>
+
+<!--
+<remark>NOTE: The program analyses are not completed in the current version of JWIG.
+(For now, see the earlier publications on JWIG and <xact/>.)</remark>
+-->
+
+<!-- =============================================================================================== -->
+
+<h1 id="sec:examples">Examples</h1>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:quickpoll">Example: <code>QuickPoll</code></h2>
+
+<p>
+The QuickPoll example illustrates a small application where it is possible for a client to ask a question
+to which other clients can answer either 'yes' or 'no'.
+The web app has four web methods, <tt>index</tt>, <tt>init</tt>, <tt>vote</tt> and <tt>results</tt>, and a single filter,
+<tt>authenticate</tt>, that filters requests to the <tt>init</tt> method and requires the client to authenticate using a
+username and a password. An inner class <tt>State</tt> holds the question and the votes. Finally, the field <tt>wrapper</tt>
+holds an XML fragment which is used by all the web methods.
+</p>
+<p>
+The web methods follow a straightforward pattern returning an XHTML page to the client upon request. The <tt>init</tt>
+and <tt>vote</tt> methods allow changes to the state of the web app. Both methods define a <tt>SubmitHandler</tt>
+to receive parameters from the client on form submission and update the question and the votes accordingly.
+Finally, the <tt>results</tt> method illustrates how XML generation can be wrapped in an <tt>XMLProducer</tt> to allow server
+push of values as they change.
+</p>
+
+<example><caption>Example: <code>QuickPoll</code></caption>
+package quickpoll;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+@URLPattern("quickpoll")
+public class QuickPoll extends WebApp {
+
+  XML wrapper = [[
+    &lt;html&gt;
+      &lt;head&gt;&lt;title&gt;QuickPoll&lt;/title&gt;&lt;/head&gt;
+      &lt;body&gt;
+        &lt;h1&gt;QuickPoll&lt;/h1&gt;
+        &lt;[BODY]&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  ]];
+
+  class State {
+    String question;
+    int yes;
+    int no;
+  }
+  
+  State state = new State();
+  
+  @URLPattern("")
+  public XML index() {
+    return wrapper.plug("BODY", [[
+      &lt;ul&gt;
+        &lt;li&gt;&lt;a href={makeURL("init")}&gt;Initialize&lt;/a&gt; (access control)&lt;/li&gt;
+        &lt;li&gt;&lt;a href={makeURL("vote")}&gt;Vote&lt;/a&gt;&lt;/li&gt;
+        &lt;li&gt;&lt;a href={makeURL("results")}&gt;View results&lt;/a&gt;&lt;/li&gt;
+      &lt;/ul&gt;
+    ]]);
+  }
+  
+  @URLPattern("init")
+  public void authenticate() {
+    User u = getUser();
+    if (u != null &amp;&amp; u.getUsername().equals("jdoe") &amp;&amp; 
+        u.getPassword().equals("42")) 
+      next();
+    else
+      throw new AuthorizationRequiredException("QuickPoll");
+  }
+  
+  public XML init() {
+    return wrapper.plug("BODY", [[
+      &lt;form method="post" action=[INIT]&gt;
+        What is your question?&lt;br/&gt;
+        &lt;input name="question" type="text" size="40"/&gt;?&lt;br/&gt;
+        &lt;input type="submit" value="Register my question"/&gt;
+      &lt;/form&gt;
+    ]]).plug("INIT", new SubmitHandler() {
+      XML run(String question) {
+        synchronized (state) {
+          state.question = question;
+          state.yes = state.no = 0;
+        }
+        update(state);
+        return wrapper.plug("BODY", [[
+          Your question has been registered.
+          Let the vote begin!
+        ]]);
+      }
+    });
+  }
+
+  public XML vote() {
+    if (state.question == null)
+      throw new AccessDeniedException("QuickPoll not yet initialized");
+    addResponseInvalidator(state);
+    return wrapper.plug("BODY", [[
+      &lt;{state.question}&gt;?&lt;p/&gt;
+      &lt;form method="post" action=[VOTE]&gt;
+        &lt;input name="vote" type="radio" value="yes"/&gt; yes&lt;br/&gt;
+        &lt;input name="vote" type="radio" value="no"/&gt; no&lt;p/&gt;
+        &lt;input type="submit" value="Vote"/&gt;
+      &lt;/form&gt;
+    ]]).plug("VOTE", new SubmitHandler() {
+      XML run(String vote) {
+        synchronized (state) {
+          if ("yes".equals(vote))
+            state.yes++;
+          else if ("no".equals(vote))
+            state.no++;
+        }
+        update(state);
+        return wrapper.plug("BODY", [[
+          Thank you for your vote!
+        ]]);
+      }
+    });
+  }
+  
+  public XML results() {
+    return wrapper.plug("BODY", new XMLProducer(state) {
+      XML run() {
+        synchronized (state) {
+          int total = state.yes + state.no;
+          if (total == 0)
+            return [[No votes yet...]];
+          else
+            return [[
+              &lt;{state.question}&gt;?&lt;p/&gt;
+              &lt;table border="0"&gt;
+                &lt;tr&gt;
+                  &lt;td&gt;Yes:&lt;/td&gt;&lt;td&gt;&lt;{drawBar(300*state.yes/total)}&gt;&lt;/td&gt;
+                  &lt;td&gt;&lt;{state.yes}&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+                &lt;tr&gt;
+                  &lt;td&gt;No:&lt;/td&gt;&lt;td&gt;&lt;{drawBar(300*state.no/total)}&gt;&lt;/td&gt;
+                  &lt;td&gt;&lt;{state.no}&gt;&lt;/td&gt;
+                &lt;/tr&gt;
+              &lt;/table&gt;
+            ]];
+        }
+      }
+    });
+  }
+  
+  private XML drawBar(int length) {
+    return [[&lt;table&gt;&lt;tr&gt;
+               &lt;td bgcolor="black" height="20" width={length}&gt;&lt;/td&gt;
+             &lt;/tr&gt;&lt;/table&gt;]];
+  }
+}
+
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:microchat">Example: <code>MicroChat</code></h2>
+
+<p>
+The MicroChat example is an application where clients are able to communicate with each other
+through a simple interface containing an input box and a list of messages. The list of messages is stored in the <tt>messages</tt>
+field using the <tt>Messages</tt> class which simply contains a list of strings.
+</p>
+<p>
+A single web method <tt>run</tt> presents the list of messages. The generated XHTML list is wrapped
+in an <tt>XMLProducer</tt> to allow the view to be updated at all clients as the list changes. The
+<tt>XMLProducer</tt> listens for updates at the <tt>messages</tt> object and updates the view if the list is
+updated.
+Furthermore, the <tt>run</tt> method contains a <tt>SubmitHandler</tt> that receives messages written by clients.
+The handler adds the new message to the list of messages, and the <tt>add</tt> method on <tt>Messages</tt> calls
+<doc ref="dk/brics/jwig/WebContext.html#update(java.lang.Object)">update</doc> to notify
+the <tt>XMLProducer</tt>.
+Finally, the example uses an <tt>EventHandler</tt> to allow clients to clear the list of messages. The
+EventHandler is executed when the <tt>reset</tt> button is clicked and the change is pushed to all clients
+as a consequence of the call to <doc ref="dk/brics/jwig/WebContext.html#update(java.lang.Object)">update</doc>.
+</p>
+<p>
+Note that the use of the <xact/> syntax means that values from the clients are escaped by construction.
+This means that it is not possible for a malicious client to inject HTML or JavaScript into
+another client's browser in this example.
+</p>
+
+<example><caption>Example: <code>MicroChat</code></caption>
+package microchat;
+
+import java.util.*;
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+@URLPattern("microchat")
+public class MicroChat extends WebApp {
+
+  class Messages {
+    List&lt;String&gt; ms = new ArrayList&lt;String&gt;();
+      
+    void add(String msg) {
+      ms.add(msg);
+      update(this);
+    }
+      
+    void reset() {
+      ms.clear();
+      update(this);
+    }
+  }
+    
+  Messages messages = new Messages();
+
+  @URLPattern("")
+    public XML run() {
+      return [[
+        &lt;html&gt;
+          &lt;head&gt;
+            &lt;title&gt;MicroChat&lt;/title&gt;
+          &lt;/head&gt;
+          &lt;body&gt;
+            &lt;{ 
+              new XMLProducer(messages) {
+                XML run() {
+                  if (!messages.ms.isEmpty()) 
+                    return [[
+                      &lt;ul&gt;
+                        &lt;{ [[&lt;li&gt;&lt;[MSG]&gt;&lt;/li&gt;]]
+                           .plugWrap("MSG", messages.ms) }&gt;
+                      &lt;/ul&gt;
+                    ]];
+                  else
+                    return [[]];
+                }
+              } 
+            }&gt;
+            &lt;form method="post" action=[SEND]&gt;
+              &lt;input type="text" name="msg"/&gt;
+              &lt;input type="submit" value="Send!"/&gt;
+              &lt;p/&gt;
+              &lt;input type="button" value="Reset" onclick=[RESET]/&gt;
+            &lt;/form&gt;
+          &lt;/body&gt;
+        &lt;/html&gt;
+      ]]
+      .plug("SEND", new SubmitHandler() {
+          void run(String msg) {
+          messages.add(msg);
+        }
+      })
+      .plug("RESET", new EventHandler() {
+          void run() {
+          messages.reset();
+        }
+      });
+  }
+}
+        
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+<h2 id="sec:guessinggame">Example: <code>GuessingGame</code></h2>
+
+<p>
+The GuessingGame example is a small game that requires the client to
+guess a number between 0 and 100. If the client makes an incorrect
+guess, he is informed whether the number to guess is higher or lower than
+the number he provided. The application keeps track of the number of guesses
+he has made so far as well as the global record held by the client who has guessed
+the number in the least number of guesses.
+</p>
+<p>
+The GuessingGame example illustrates the use of a <tt>Session</tt> class to control
+the web app control flow. The web method <tt>start</tt> creates a new <tt>Session</tt>
+object and redirects the user to the <tt>play</tt> method, which simply returns
+the value of the <tt>page</tt> field of the session.
+</p>
+<p>
+The flow of the application is controlled by the <tt>GameSession</tt> class. When a
+<tt>GameSession</tt> instance is created, an initial page is stored in its <tt>page</tt>
+field. This page contains a <tt>SubmitHandler</tt> that receives the guess from the client.
+The <tt>SubmitHandler</tt> updates the <tt>page</tt> value to contain either a message that the
+number should be higher or lower or a confirmation that the number has been guess
+as well as possibly a form with a new <tt>SubmitHandler</tt> allowing the client to
+type his name if he has broken the record.
+</p>
+<p>
+Notice that the number is never made available on the client side and
+that the client cannot progress to entering his name for the highscore unless
+he has broken the record.
+</p>
+
+<example><caption>Example: <code>GuessingGame</code></caption>
+package guessinggame;
+
+import java.net.URL;
+import java.util.*;
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+import dk.brics.jwig.persistence.HibernateQuerier;
+
+@URLPattern("guessinggame")
+public class GuessingGame extends WebApp {
+
+  public GuessingGame() {
+    HibernateQuerier.getConfig().addClass(GameState.class);
+  }
+
+  XML wrapper = [[
+    &lt;html&gt;
+      &lt;head&gt;&lt;title&gt;The Guessing Game&lt;/title&gt;&lt;/head&gt;
+      &lt;body bgcolor="aqua"&gt;&lt;[BODY]&gt;&lt;/body&gt;
+    &lt;/html&gt;
+  ]];
+
+  Random rnd = new Random();
+
+  class UserState extends Session {
+
+    int number;
+    int guesses;
+    XML page;
+
+    UserState() {
+      number = rnd.nextInt(100)+1;
+      guesses = 0;
+      page = wrapper.plug("BODY", [[
+          &lt;div&gt;Please guess a number between 1 and 100:&lt;/div&gt;
+          &lt;form method="post" action=[GUESS]&gt;
+            &lt;input name="guess" type="text" size="3" maxlength="3"/&gt;
+            &lt;input type="submit" value="continue"/&gt;
+          &lt;/form&gt;
+        ]]).plug("GUESS", new SubmitHandler() {
+          void run(int guess) {
+            guesses++;
+            if (guess != number) {
+              page = page.setContent("/xhtml:html/xhtml:body/xhtml:div", [[
+                That is not correct. Try a
+                &lt;b&gt;&lt;{(guess&gt;number)?"lower":"higher"}&gt;&lt;/b&gt; number:
+              ]]);
+            } else {
+              page = page.setContent("/xhtml:html/xhtml:body", [[
+                You got it, using &lt;b&gt;&lt;{guesses}&gt;&lt;/b&gt; guesses.&lt;p/&gt;
+              ]]);
+              final XML thanks = [[Thank you for playing this exciting game!]];
+              GameState game = GameState.load();
+              if (game.getRecord() &gt; 0 &amp;&amp; guesses &gt;gt;= game.getRecord())
+                page = page.appendContent("/xhtml:html/xhtml:body", thanks);
+              else
+                page = page.appendContent("/xhtml:html/xhtml:body", [[
+                  That makes you the new record holder!&lt;p/&gt;gt;
+                  Please enter your name for the hi-score list:
+                  &lt;form method="post" action=[RECORD]&gt;
+                    &lt;input name="name" type="text" size="20"/&gt;
+                    &lt;input type="submit" value="continue"/&gt;
+                  &lt;/form&gt;
+                ]]).plug("RECORD", new SubmitHandler() {
+                  void run(String name) {
+                    synchronized (GuessingGame.class) {
+                      GameState game = GameState.load();
+                      if (guesses &lt; game.getRecord())
+                        game.setRecord(guesses, name);
+                    }
+                    page = page.setContent("/xhtml:html/xhtml:body", thanks);
+                    update(UserState.this);
+                  }
+                });
+            }
+            update(UserState.this);
+          }
+        });
+    }
+  }
+
+  public URL start() {
+    GameState.load().incrementPlays();
+    return makeURL("play", new UserState());
+  }
+
+  public XML play(UserState s) {
+    return s.page;
+  }
+
+  public XML record() {
+    final GameState game = GameState.load();
+    return wrapper.plug("BODY", new XMLProducer(game) {
+      XML run() {
+        synchronized (game) {
+          if (game.getHolder() != null)
+            return [[
+              In &lt;{game.getPlays()}&gt; plays of this game,
+              the record holder is &lt;b&gt;&lt;{game.getHolder()}&gt;&lt;/b&gt; with
+              &lt;b&gt;&lt;{game.getRecord()}&gt;&lt;/b&gt; guesses.
+            ]];
+          else
+            return [[&lt;{game.getPlays()}&gt; plays started. 
+                     No players finished yet.]];
+        }
+      }
+    });
+  }
+
+}
+</example>
+
+<!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+
+</div>
+</body>
+</html>

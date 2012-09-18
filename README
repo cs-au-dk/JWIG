@@ -1,0 +1,17 @@
+JWIG
+----
+
+Copyright (C) 2008-2012 Anders Moeller and Mathias Schwarz
+
+This source code in this package may be used under the terms of the
+BSD license.  Please read the file COPYING for details.
+
+For installation instructions, see the file INSTALL.
+The file INSTALL-PROXY contains instructions for setting up a local  
+Apache httpd proxy server in front of Tomcat. 
+The file INSTALL-DATABASE describes database setup using MySQL.
+The file kickstart/README-KICKSTART shows how to run a Hello World
+JWIG program.
+
+For more information, go to the package home page at
+http://www.brics.dk/JWIG/

@@ -1,0 +1,8 @@
+### Configuration for building JWIG and deploying javadoc documentation and example web site. 
+### See also examples/src/jwig.properties
+
+# webapps = /users/amoeller/net/apache-tomcat-6.0.14/webapps
+webapps = C:/Program Files/Apache Software Foundation/Tomcat 6.0/webapps
+
+# public = /web/amoeller/public_html/jwig
+public = C:/Users/Anders/public_html/jwig

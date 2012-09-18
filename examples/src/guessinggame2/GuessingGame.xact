@@ -1,0 +1,114 @@
+package guessinggame2;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.XML;
+import java.net.URL;
+import java.util.Random;
+
+@URLPattern("guessinggame")
+public class GuessingGame extends WebApp {
+
+  private class GameState {
+    private int plays = 0;
+    private String holder = null;
+    private int record = Integer.MAX_VALUE;
+    private Random rnd = new Random();
+  }
+
+  class UserState extends Session {
+      int number;
+      int guesses;
+      XML message = [[]];
+      boolean guessed;
+
+      UserState() {
+        number = game.rnd.nextInt(100)+1;
+        guesses = 0;
+      }
+    }
+
+  GameState game = new GameState();
+
+  final XML wrapper = [[
+    <html>
+      <head><title>The Guessing Game</title></head>
+      <body bgcolor="aqua"><[BODY]></body>
+    </html>
+  ]];
+
+  public XML play(final UserState u) {
+      return wrapper.plug("BODY", [[
+          <{u.message}>
+          <div>Please guess a number between 1 and 100:</div>
+          <form method="post" action=[GUESS]>
+            <input name="guess" type="text" size="3" maxlength="3"/>
+            <input type="submit" value="continue"/>
+          </form>
+        ]]).plug("GUESS", new SubmitHandler() {
+          URL run(int guess) {
+            update(u);
+            u.guesses++;
+            if (guess != u.number) {
+              u.message = [[ That is not correct. Try a
+                <b><{(guess>u.number)?"lower":"higher"}></b> number:
+              ]];
+              return null;
+            } else {
+              u.guessed = true;
+              if (game.record > 0 && u.guesses >= game.record)
+                return makeURL("thanks", u);
+	          else
+	            return makeURL("highscore", u);
+            }
+          }
+        });
+    }
+
+
+  private XML gotIt (UserState u) {
+    return [[You got it, using <b><{u.guesses}></b> guesses.<p/>
+                                  <[HISCORE]>
+	                              Thank you for playing this exciting game!]];
+    }
+
+  public XML thanks(UserState u) {
+    return wrapper.plug("BODY", gotIt(u));
+  }
+
+  public XML highscore(final UserState u) {
+      return wrapper.plug("BODY", gotIt(u).plug("HISCORE", [[
+                  That makes you the new record holder!<p/>
+                  Please enter your name for the hi-score list:
+                  <form method="post" action=[RECORD]>
+                    <input name="name" type="text" size="20"/>
+                    <input type="submit" value="continue"/>
+                  </form>
+                ]].plug("RECORD", new SubmitHandler() {
+                  URL run(String name) {
+                    game.record = u.guesses;
+                    game.holder = name;
+                    return makeURL("thanks", u);
+            }
+      })));
+  }
+
+  public URL start() {
+    game.plays++;
+	return makeURL("play", new UserState());
+  }
+
+  public XML record() {
+    return wrapper.plug("BODY", new XMLProducer(game) {
+      XML run() {
+        if (game.holder != null)
+          return [[
+            In <{game.plays}> plays of this game,
+            the record holder is <b><{game.holder}></b> with
+            <b><{game.record}></b> guesses.
+         ]];
+        else
+         return [[<{game.plays}> plays started. No players finished yet.]];
+      }
+    });
+  }
+}

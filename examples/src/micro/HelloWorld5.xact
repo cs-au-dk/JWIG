@@ -1,0 +1,42 @@
+package micro;
+
+import java.net.URL;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.XML;
+
+public class HelloWorld5 extends WebApp {
+
+	public XML run(String username) {
+		return [[ 
+		  <html>
+		    <head>
+		      <title>Hello World</title>
+		    </head>
+		    <body>
+		      <a href={ makeURL("run2", new MySession(username)) }>click here</a>
+		    </body>
+		  </html> 
+		]];
+	}
+	
+	public String run2(MySession s) {
+		return s.username;
+	}
+	
+	class MySession extends Session {
+		String username;
+		MySession(String username) {
+			this.username = username;
+		}
+	}
+	
+	@URLPattern("")
+	public URL index() {
+		return makeURL("test.HelloWorld5.run", "John Doe");
+	}
+	
+	public String test(String a, Parameters p) {
+		return makeURL("test", a, p).toString();
+	}
+}

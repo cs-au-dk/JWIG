@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="examples/build" path="examples/src"/>
+	<classpathentry kind="src" output="test/build" path="test/src"/>
+	<classpathentry kind="lib" path="lib/commons-fileupload.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io.jar"/>
+	<classpathentry kind="lib" path="lib/ehcache.jar"/>
+	<classpathentry kind="lib" path="lib/json.jar"/>
+	<classpathentry kind="lib" path="lib/mailapi.jar"/>
+	<classpathentry kind="lib" path="lib/xact.jar"/>
+	<classpathentry kind="lib" path="lib/building/jsmin.jar"/>
+	<classpathentry kind="lib" path="lib/building/junit.jar"/>
+	<classpathentry kind="lib" path="lib/building/resin.jar"/>
+	<classpathentry kind="lib" path="lib/building/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib/analysis/soot.jar"/>
+	<classpathentry kind="lib" path="lib/analysis/string.jar"/>
+	<classpathentry kind="lib" path="lib/automaton.jar"/>
+	<classpathentry kind="lib" path="lib/schematools.jar"/>
+	<classpathentry kind="lib" path="lib/bcel-5.2-daimi.jar"/>
+	<classpathentry kind="lib" path="lib/dom4j.jar"/>
+	<classpathentry kind="lib" path="lib/building/catalina6.jar"/>
+	<classpathentry kind="lib" path="lib/building/catalina7.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib/log4j.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

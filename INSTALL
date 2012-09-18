@@ -1,0 +1,25 @@
+To run JWIG web applications, you need:
+
+ - Java 6 (see http://java.sun.com/javase/downloads/)
+ - Apache Ant 1.7 (see http://ant.apache.org/bindownload.cgi)
+ - Tomcat 6.0 (see http://tomcat.apache.org/download-60.cgi)
+   or Resin 1.6 (see http://www.caucho.com/download/)
+
+(or later versions)
+Note that Java 5, Ant 1.6.5, and Tomcat 5.5 are *not* sufficient.
+ 
+The default Tomcat configuration needs a small modification: 
+In conf/server.xml, replace the attribute 
+
+  protocol="HTTP/1.1"
+  
+in the main Connector element with
+
+  protocol="org.apache.coyote.http11.Http11NioProtocol"
+  URIEncoding="UTF-8"
+  
+If you use Resin instead of Tomcat, you need to replace the
+servlet class for the Synchronizer servlet in 
+web/WEB-INF/web.xml to:
+
+  dk.brics.jwig.server.resin.ResinCometHandler

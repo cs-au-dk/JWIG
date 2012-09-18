@@ -1,0 +1,29 @@
+package micro;
+
+import dk.brics.jwig.FileField;
+import dk.brics.jwig.SubmitHandler;
+import dk.brics.jwig.URLPattern;
+import dk.brics.jwig.WebApp;
+import dk.brics.xact.XML;
+
+public class FileUpload extends WebApp {
+
+	public XML upload() {
+		return [[
+		  <html>
+		     <head><title>FileUpload</title></head>
+			 <body>
+			 <form method="post" enctype="multipart/form-data" action={ 
+				  new SubmitHandler() { public String run(FileField f, String n) {
+			  		  return "name=" + n + ", filename=" + f.getFileName() + ",size=" + f.getSize();
+				  }}
+				}>
+				Your name: <input type="text" name="n"/><br/>
+				Upload a file: <input type="file" name="f"/><br/>
+				<input type="submit" value="go!"/>
+			 </form>
+		    </body>
+		  </html>
+		]];
+	}
+}

@@ -1,0 +1,109 @@
+package guessinggame;
+
+import java.net.URL;
+import java.util.*;
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+import dk.brics.jwig.persistence.HibernateQuerier;
+
+@URLPattern("guessinggameses")
+public class GuessingGame extends WebApp {
+
+  public GuessingGame() {
+    HibernateQuerier.getConfig().addClass(GameState.class);
+  }
+
+  XML wrapper = [[
+    <html>
+      <head><title>The Guessing Game</title></head>
+      <body bgcolor="aqua"><[BODY]></body>
+    </html>
+  ]];
+
+  Random rnd = new Random();
+  
+  class UserState extends Session {
+  
+    int number;
+    int guesses;
+    XML page;
+
+    UserState() {
+      number = rnd.nextInt(100)+1;
+      guesses = 0;
+      page = wrapper.plug("BODY", [[
+          <div>Please guess a number between 1 and 100:</div> 
+          <form method="post" action=[GUESS]>
+            <input name="guess" type="text" size="3" maxlength="3"/>
+            <input type="submit" value="continue"/>
+          </form>
+        ]]).plug("GUESS", new SubmitHandler() {
+          void run(int guess) {
+            guesses++;
+            if (guess != number) {
+              page = page.setContent("/xhtml:html/xhtml:body/xhtml:div", [[
+                That is not correct. Try a 
+                <b><{(guess>number)?"lower":"higher"}></b> number:
+              ]]);
+            } else { 
+              page = page.setContent("/xhtml:html/xhtml:body", [[
+	              You got it, using <b><{guesses}></b> guesses.<p/>
+	            ]]);          
+              final XML thanks = [[Thank you for playing this exciting game!]];
+              GameState game = GameState.load();
+              if (game.getRecord() > 0 && guesses >= game.getRecord())
+	            page = page.appendContent("/xhtml:html/xhtml:body", thanks);
+              else
+                page = page.appendContent("/xhtml:html/xhtml:body", [[
+                  That makes you the new record holder!<p/>
+                  Please enter your name for the hi-score list:
+                  <form method="post" action=[RECORD]>
+                    <input name="name" type="text" size="20"/>
+                    <input type="submit" value="continue"/>
+                  </form>
+                ]]).plug("RECORD", new SubmitHandler() {
+                  void run(String name) {
+                    synchronized (GuessingGame.class) {
+                      GameState game = GameState.load();
+                      if (guesses < game.getRecord())
+                        game.setRecord(guesses, name);
+                    }
+                    page = page.setContent("/xhtml:html/xhtml:body", thanks);
+                    update(UserState.this);
+                  }
+                });
+            }
+            update(UserState.this);
+          }
+        });
+    }
+  }
+
+  public URL start() {
+    GameState.load().incrementPlays();
+	return makeURL("play", new UserState());
+  }
+
+  public XML play(UserState s) { 
+    return s.page;
+  }
+   
+  public XML record() { 
+    final GameState game = GameState.load();
+    return wrapper.plug("BODY", new XMLProducer(game) {
+      XML run() {
+        synchronized (game) {
+          if (game.getHolder() != null)
+            return [[
+              In <{game.getPlays()}> plays of this game, 
+              the record holder is <b><{game.getHolder()}></b> with 
+              <b><{game.getRecord()}></b> guesses.
+            ]];
+          else
+            return [[<{game.getPlays()}> plays started. No players finished yet.]];
+        }
+      }
+    });
+  }
+  
+}

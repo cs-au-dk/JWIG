@@ -1,0 +1,119 @@
+package quickpoll;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+@URLPattern("quickpoll")
+public class QuickPoll extends WebApp {
+
+  XML wrapper = [[
+    <html>
+      <head><title>QuickPoll</title></head>
+      <body>
+        <h1>QuickPoll</h1>
+        <[BODY]>
+      </body>
+    </html>
+  ]];
+
+  class State {
+    String question;
+    int yes;
+    int no;
+  }
+  
+  State state = new State();
+  
+  @URLPattern("")
+  public XML index() {
+    return wrapper.plug("BODY", [[
+      <ul>
+        <li><a href={makeURL("init")}>Initialize</a> (access control)</li>
+        <li><a href={makeURL("vote")}>Vote</a></li>
+        <li><a href={makeURL("results")}>View results</a></li>
+      </ul>
+    ]]);
+  }
+  
+  @URLPattern("init")
+  public void authenticate() {
+	User u = getUser();
+	if (u != null && u.getUsername().equals("jdoe") && u.getPassword().equals("42")) 
+      next();
+  	else
+  	  throw new AuthorizationRequiredException("QuickPoll");
+  }
+  
+  public XML init() {
+    return wrapper.plug("BODY", [[
+      <form method="post" action=[INIT]>
+        What is your question?<br/>
+        <input name="question" type="text" size="40"/>?<br/>
+        <input type="submit" value="Register my question"/>
+      </form>
+    ]]).plug("INIT", new SubmitHandler() {
+      XML run(String question) {
+        synchronized (state) {
+          state.question = question;
+          state.yes = state.no = 0;
+        }
+        update(state);
+        return wrapper.plug("BODY", [[
+          Your question has been registered.
+          Let the vote begin!
+        ]]);
+      }
+    });
+  }
+
+  public XML vote() {
+    if (state.question == null)
+      throw new AccessDeniedException("QuickPoll not yet initialized");
+    addResponseInvalidator(state);
+    return wrapper.plug("BODY", [[
+      <{state.question}>?<p/>
+      <form method="post" action=[VOTE]>
+        <input name="vote" type="radio" value="yes"/> yes<br/>
+        <input name="vote" type="radio" value="no"/> no<p/>
+        <input type="submit" value="Vote"/>
+      </form>
+    ]]).plug("VOTE", new SubmitHandler() {
+      XML run(String vote) {
+        synchronized (state) {
+          if ("yes".equals(vote))
+            state.yes++;
+          else if ("no".equals(vote))
+            state.no++;
+        }
+        update(state);
+        return wrapper.plug("BODY", [[
+          Thank you for your vote!
+        ]]);
+      }
+    });
+  }
+  
+  public XML results() {
+    return wrapper.plug("BODY", new XMLProducer(state) {
+      XML run() {
+        synchronized (state) {
+          int total = state.yes + state.no;
+          if (total == 0)
+            return [[No votes yet...]];
+          else
+            return [[
+              <{state.question}>?<p/>
+              <table border="0">
+                <tr><td>Yes:</td><td><{drawBar(300*state.yes/total)}></td><td><{state.yes}></td></tr>
+                <tr><td>No:</td><td><{drawBar(300*state.no/total)}></td><td><{state.no}></td></tr>
+              </table>
+            ]];
+        }
+      }
+    });
+  }
+  
+  private XML drawBar(int length) {
+    return [[<table><tr><td bgcolor="black" height="20" width={length}></td></tr></table>]];
+  }
+}

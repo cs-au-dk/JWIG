@@ -1,0 +1,43 @@
+package micro;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.XML;
+
+import javax.servlet.http.Cookie;
+
+@URLPattern("access")
+public class AccessControl extends WebApp {
+
+	/**
+	 * Must authenticate with cookie or form field.
+	 */
+	@URLPattern("**")
+	public void accessControl1(String password) {
+		String key = null;
+		for (Cookie c : getCookies()) 
+			if (c.getName().equals("key"))
+				key = c.getValue();
+		if (key == null || !key.equals("foobar")) {
+			if (password == null || !password.equals("42"))
+				throw new AccessDeniedException("you must specify the right password parameter!");
+		}
+		next();
+	}
+
+	/**
+	 * Must authenticate using HTTP Basic.
+	 */
+	@URLPattern("**") @Priority(PRE_CACHE + 100)
+	public void accessControl2() {
+		User u = getUser();
+		if (u == null || !u.getUsername().equals("jdoe") || !u.getPassword().equals("42")) 
+			throw new AuthorizationRequiredException("JWIG examples");
+		next();
+	}
+
+	public XML hello() {
+		addCookie(new Cookie("key", "foobar"), false);
+		return [[<html><head><title>AccessControl</title></head><body>Hello World</body></html>]];
+	}
+}
+

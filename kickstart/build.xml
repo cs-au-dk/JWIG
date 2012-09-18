@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<project name="JWIG kickstart" default="all" basedir=".">
+
+	<property name="project" value="jwig-kickstart"/>
+
+	<property file="local.properties"/>
+
+	<path id="classpath">
+		<fileset dir="." includes="lib/**/*.jar"/>
+	</path>
+
+	<target name="all" depends="war" />
+
+	<target name="war" depends="compile">
+		<mkdir dir="temp/WEB-INF/classes" />
+		<copy todir="temp/WEB-INF/classes">
+			<fileset dir="build" includes="**/*.class" />
+		</copy>
+		<copy todir="temp">
+			<fileset dir="web" includes="**/*" />
+		</copy>
+		<copy todir="temp/WEB-INF/lib">
+			<fileset dir="lib" includes="*.jar" />
+			<fileset dir="lib/app" includes="*.jar" />
+		</copy>
+		<jar jarfile="${project}.war" basedir="temp" />
+		<delete dir="temp" />
+	</target>
+
+	<target name="clean">
+		<delete dir="build" />
+	</target>
+
+	<target name="deploy" depends="war">
+		<fail message="property 'webapps' should be set in local.properties">
+			<condition>
+				<not>
+					<isset property="webapps"/>
+				</not>
+			</condition>
+		</fail>
+		<copy todir="${webapps}" file="${project}.war" />
+	</target>
+
+	<target name="compile">
+		<mkdir dir="build" />
+		<copy todir="build">
+			<fileset dir="src" includes="**/*.xml,**/*.properties"/>
+		</copy>
+		<fileset id="xactfiles" dir="src" includes="**/*.xact"/>
+		<pathconvert property="xactfiles2" pathsep=" " refid="xactfiles">
+			<map from="${basedir}/src/" to="src/"/>
+		</pathconvert>
+		<java classname="dk.brics.xact.compiler.Main" fork="true">
+			<arg line="-cp ${toString:classpath} -d build ${xactfiles2}"/>
+			<classpath refid="classpath"/>
+		</java>
+		<javac srcdir="src;build" includes="**/*.java" target="1.6" destdir="build" debug="on">
+			<classpath refid="classpath"/>
+		</javac>
+	</target>
+
+	<target name="analyze">
+		<!-- TODO: run JWIG analyzer -->
+	</target>
+
+</project>

@@ -1,0 +1,19 @@
+package micro;
+
+import dk.brics.jwig.*;
+import dk.brics.xact.*;
+
+@URLPattern("hello")
+public class HelloWorld extends WebApp {
+
+	@URLPattern("")
+	public XML hello() {
+		return [[
+		  <html>
+		    <head><title>Hello World</title></head>
+		    <body>Hello World</body>
+		  </html>
+		]];
+	}
+}
+

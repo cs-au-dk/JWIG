@@ -1,0 +1,166 @@
+body {
+	font-family: 'Calibri', sans-serif;
+	color: #000;
+}
+
+#titlepage {
+	text-align: center;
+}
+
+#titlepage h1 {
+	font-size: 250%;
+}
+
+h1, h2, h3 {
+	font-family: 'Cambria','Sans',helvetica,arial,sans-serif;
+	font-weight: bold;
+	color: #005a9c;
+}
+
+h2 a {
+	font-size: 80%;
+}
+
+pre,tt { 
+	font-family: monospace;
+	font-weight: normal;
+}
+
+pre.code {
+	margin-left: 1em;
+	margin-right: 1em;
+	padding: 5px 5px 5px 5px;
+	margin-top: 0;
+	background: #ffd; 
+	border-style: dotted; 
+	border-width: 1px; 
+	border-color: #77a 
+}
+
+.caption {
+	margin-left: 1em;
+	padding-left: 5px;
+	padding-right: 5px;
+	background: #ffe; 
+	border-style: dotted; 
+	border-width: 1px; 
+	border-color: #77a 
+}
+
+a:link { 
+ 	color: #0000cc;
+}
+
+a:visited { 
+	color: #660099;
+}
+
+a:active { 
+	color: #3333ff;
+}
+
+.smallcaps { 
+	font-variant: small-caps 
+}
+
+dt { 
+	font-weight: bold;
+}
+
+#contents {
+	font-size: 75%;
+	border-width: 1px; 
+	border-color: #aaa 
+}
+
+.contents dt {
+	float: left;
+	margin-left: 4px;
+}
+
+dt {
+	font-weight: normal;
+}
+
+.contents dd {
+	margin-left: 2em;
+	padding-top: 2px;
+}
+
+.contents dd dd {
+	margin-left: 3em;
+}
+
+#contents h1 {
+	font-size: 20px;
+}
+
+.remark {
+	background: #faa;
+	margin: 1em;
+	padding: 0.5em;
+}
+
+#main, #titlepage {
+	min-width: 650px;
+}
+
+@media screen {
+
+#main, #titlepage {
+	margin-right: 250px;
+}
+
+#contents {
+	width: 220px;
+	right: 0;
+	top: 0;
+	left: auto;
+	border-style: none none dotted dotted; 
+	border-width: 1px;
+	position: absolute;
+	padding-left: 5px;
+	padding-top: 5px;
+	background-color: white;
+	filter: alpha(opacity=88);
+	opacity: 0.88;
+}
+
+body>#contents {
+	position: fixed;
+}
+
+}
+
+@media print {
+
+#contents {
+  display: none
+}
+
+}
+
+hr {
+	border: 0;
+	width: 90%;
+	color: #bbb;
+	height: 1px;
+	margin-top: 1em;
+}
+
+.highlight {
+	margin: 1em;
+	padding: 1em;
+	background: #f0f0ff;
+	border-style: dotted;
+	border-width: 1px;
+}
+
+ul li {
+	padding-top: 0.5em;
+	padding-bottom: 0.5em;
+}
+
+.center {
+	text-align: center;
+}

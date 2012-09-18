@@ -1,0 +1,30 @@
+package micro;
+
+import dk.brics.jwig.Priority;
+import dk.brics.jwig.WebApp;
+import dk.brics.xact.XML;
+
+import javax.servlet.http.HttpServletRequest;
+
+public class RequestInfo extends WebApp {
+
+    @Priority(PRE_CACHE)
+    public XML run() {
+        HttpServletRequest req = getServletRequest();
+        String referer = req.getHeader("Referer");
+        return [[
+          <html>
+            <head><title>RequestInfo</title></head>
+            <body>
+              Referer=<{ referer != null ? referer : "<none>" }><br/>
+              RequestURL(original)=<{ req.getRequestURL() }><br/>
+              RequestURL(modified)=<{ getRequestURL() }><br/>
+              Scheme=<{ req.getScheme() }><br/>
+              Host=<{ req.getRemoteHost() }><br/>
+              ContextPath=<{ req.getContextPath() }><br/>
+              Secure=<{ req.isSecure() }><br/>
+              <a href={ makeURL("run") }>this</a>
+            </body>
+          </html>]];
+    }
+}

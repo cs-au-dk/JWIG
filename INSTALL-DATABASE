@@ -1,0 +1,45 @@
+Database setup for MySQL in JWIG:
+
+First you must install MySQL on your system using the Windows installer or apt-get or 
+another installer of your choice. This is specific to your distribution so please see 
+the documentation provided for your system.
+
+Second we want to create a database. On Linux or OS X log in as root.
+If the database has never been used before you will need to set up a few things 
+(on Windows the installer wizard will guide you through this, in Linux/OS X you are 
+on your own).
+You must setup a password for MySQL. Do this by typing
+ 
+  mysqladmin -u root password "mypassword"
+   
+where mypassword is a password of your choice, but do not use your normal root 
+password ;-).
+Start the mysql command line utility as MySQL root user:
+ 
+  mysql -u root -p
+
+and type your password when prompted.
+Create a new database (let us call it jwig):
+
+  create database jwig;
+
+If you use the standard JWIG database setup you will not have to create any tables. 
+This will be done by Hibernate. The Hibernate setup is located in jwig.properties
+or in the hibernate.hbm.xml file in the kickstart folder. All you have to do is to 
+set the 'hibernate.connection.url' property to the URL of you database 
+(typically jdbc:mysql://localhost/jwig if the server runs on the same machine as 
+JWIG and the data you created is named 'jwig'), the property 
+'hibernate.connection.username' to 'root' and 'hibernate.connection.password' to the 
+password you picked.
+If you use something else than MySQL please resort to the Hibernate documentation 
+for setup instructions. You will have to use a different URL and a different 
+driver_class in this case. Anything else in JWIG is not MySQL specific.
+
+Now to tell JWIG that you have set up database access by setting the configuration
+property 'jwig.hibernate'. This should be done in jwig.properties using
+
+  jwig.hibernate = true
+
+or in the constructor of your web site class:
+
+  setProperty("hibernate", true);

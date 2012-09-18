@@ -1,0 +1,12 @@
+### Initial configuration of the JWIG example site. 
+
+jwig.base_url = http://services.brics.dk/java
+jwig.base_url_secure = https://services.brics.dk/java
+jwig.hibernate = true
+
+hibernate.connection.username = schwarz
+hibernate.connection.password = ToPsEcReT
+hibernate.connection.url = jdbc:mysql://mysql.daimi.au.dk/schwarz
+
+mail.transport.protocol = smtp
+mail.host = daimi.au.dk
