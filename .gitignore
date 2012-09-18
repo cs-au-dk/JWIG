@@ -7,3 +7,7 @@ jwig-*.zip
 kickstart.zip
 build
 local.properties
+
+.DS_Store
+
+*.iws
