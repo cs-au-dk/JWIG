@@ -5,7 +5,7 @@ import dk.brics.jwig.WebApp;
 import dk.brics.xact.XML;
 
 /**
- * A simple web application that simply returns "Hello World!" when the URL /hello/ is requested
+ * A simple web application that simply returns "Hello World!" when the URL /hello?what=World is requested
  */
 @URLPattern("hello")
 public class HelloApp extends WebApp {

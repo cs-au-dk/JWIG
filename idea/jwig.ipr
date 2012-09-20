@@ -461,6 +461,19 @@
         <root url="intellijad://intellijad" />
       </SOURCES>
     </library>
+    <library name="java5">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/../lib/app-building/java5.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/app-building/misc.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/app-building/sabledd_201003312132.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="intellijad://intellijad" />
+        <root url="jar://$PROJECT_DIR$/../lib/app-building/java5-src.jar!/" />
+        <root url="file://$USER_HOME$/src/java5/trunk/generated" />
+      </SOURCES>
+    </library>
     <library name="json">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/json.jar!/" />
@@ -541,6 +554,7 @@
       <JAVADOC />
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/../lib/xact-src.jar!/" />
+        <root url="intellijad://intellijad" />
       </SOURCES>
     </library>
     <library name="XMLstuff">

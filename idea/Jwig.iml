@@ -43,6 +43,7 @@
     <orderEntry type="library" name="json" level="project" />
     <orderEntry type="library" name="ehcache" level="project" />
     <orderEntry type="library" name="automaton" level="project" />
+    <orderEntry type="library" name="java5" level="project" />
   </component>
 </module>
 
