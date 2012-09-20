@@ -53,7 +53,7 @@
 			<map from="${basedir}/src/" to="src/"/>
 		</pathconvert>
 		<java classname="dk.brics.xact.compiler.Main" fork="true">
-			<arg line="-cp ${toString:classpath} -d build ${xactfiles2}"/>
+			<arg line="-cp=${toString:classpath} -out=build ${xactfiles2}"/>
 			<classpath refid="classpath"/>
 		</java>
 		<javac srcdir="src;build" includes="**/*.java" target="1.6" destdir="build" debug="on">

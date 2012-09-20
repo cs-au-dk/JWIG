@@ -8,6 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Jwig" />
+    <orderEntry type="library" name="Xact" level="project" />
   </component>
 </module>
 

@@ -1,0 +1,24 @@
+package kickstart;
+
+import dk.brics.jwig.URLPattern;
+import dk.brics.jwig.WebApp;
+import dk.brics.xact.XML;
+
+/**
+ * A simple web application that simply returns "Hello World!" when the URL /hello/ is requested
+ */
+@URLPattern("hello")
+public class HelloApp extends WebApp {
+
+   @URLPattern("")
+   public XML hello(String what) {
+        return [[
+            <html>
+                <head><title>Example</title></head>
+                <body>
+                    <p>Hello <{ what }></p>
+                </body>
+            </html>
+        ]];
+    }
+}
