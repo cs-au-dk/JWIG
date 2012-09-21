@@ -33,13 +33,11 @@ public class DependencyMap {
             return;
         }
         String requestURL = context.getRequestURL();
-        if (context.isCacheAugmented()) {
-            requestURL = requestURL + "<|>" + WebApp.get().getWebSite().getCacheAugmentationString();
-        }
         CacheObject c = new CacheObject(requestURL);
         XMLProducer producer = context.getProducer();
         if (producer != null) {
             c.setUrl(producer.getHandlerIdentifier());
+            c.setHandler(true);
         }
         addDependency(c, proxy);
     }
@@ -136,19 +134,26 @@ public class DependencyMap {
             Map<Object, Set<CacheObject>> tObjectPageMap = t.getObjectPageMap();
             for (Map.Entry<Object, Set<CacheObject>> e : tObjectPageMap.entrySet()) {
                 Set<CacheObject> cacheObjects = objectPageMap.get(e.getKey());
+                Set<CacheObject> transactionCacheObjects = e.getValue();
+                Set<CacheObject> augmentedCacheObjects = new HashSet<CacheObject>();
+                for (CacheObject o : transactionCacheObjects) {
+                    o = createAugmented(o);
+                    augmentedCacheObjects.add(o);
+                }
                 if (cacheObjects != null) {
-                    cacheObjects.addAll(e.getValue());
+                    cacheObjects.addAll(augmentedCacheObjects);
                 } else {
-                    objectPageMap.put(e.getKey(),new HashSet<CacheObject>(e.getValue()));
+                    objectPageMap.put(e.getKey(),augmentedCacheObjects);
                 }
             }
             Map<CacheObject, Set<Object>> tPageObjectMap = t.getPageObjectMap();
             for (Map.Entry<CacheObject, Set<Object>> e : tPageObjectMap.entrySet()) {
-                Set<Object> cacheObjects = pageObjectMap.get(e.getKey());
+                CacheObject cacheObject = createAugmented(e.getKey());
+                Set<Object> cacheObjects = pageObjectMap.get(cacheObject);
                 if (cacheObjects != null) {
                     cacheObjects.addAll(e.getValue());
                 } else {
-                    pageObjectMap.put(e.getKey(), new HashSet<Object>(e.getValue()));
+                    pageObjectMap.put(cacheObject, new HashSet<Object>(e.getValue()));
                 }
             }
             if (counter++ >= 100) { //Purge maps for each 100 cache transactions/requests
@@ -158,6 +163,16 @@ public class DependencyMap {
             }
             return true;
         }
+    }
+
+    private CacheObject createAugmented(CacheObject o) {
+        ThreadContext context = ThreadContext.get();
+        if (!o.isHandler() && context.isCacheAugmented()) {
+            String url = o.getUrl();
+            url = url + "<|>" + WebApp.get().getWebSite().getCacheAugmentationString();
+            o = new CacheObject(url);
+        }
+        return o;
     }
 
     private void instantUpdateObject(Object p) {

@@ -9,6 +9,8 @@ public class CacheObject { // FIXME: local class DependencyBlaBla
     
 	private String name;
 
+    private boolean isHandler;
+
     public CacheObject(String url) {
         this.url = url;
     }
@@ -40,6 +42,14 @@ public class CacheObject { // FIXME: local class DependencyBlaBla
         }
 
         return true;
+    }
+
+    public boolean isHandler() {
+        return isHandler;
+    }
+
+    public void setHandler(boolean handler) {
+        isHandler = handler;
     }
 
     @Override
