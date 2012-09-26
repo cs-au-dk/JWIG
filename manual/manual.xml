@@ -996,6 +996,12 @@ The <code>XMLProducer</code> is then executed again and the new value is sent to
     });
   }
 </example>
+For <tt>XMLProducer</tt> to work in Tomcat, the NIO connector must be used. In <tt>server.xml</tt> make sure that the
+'protocol' is set to <tt>org.apache.coyote.http11.Http11NioProtocol</tt>
+<example><caption>Connector configuration example for Tomcat</caption>
+    &lt;Connector port="8080" connectionTimeout="20000" redirectPort="8443"
+               protocol="org.apache.coyote.http11.Http11NioProtocol" /&gt;
+</example>
 
 <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
 
