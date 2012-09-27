@@ -195,7 +195,10 @@ public class Synchronizer {
 			w.close();
 		} catch (IOException e) {
 			log.debug(e.getMessage());
-		}
+		} catch (NullPointerException e) {
+            //Can happen on Tomcat 7 if the connection has just been closed
+            log.debug(e.getMessage());
+	    }
 	}
 
 	/**
