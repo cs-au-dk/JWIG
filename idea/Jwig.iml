@@ -36,7 +36,7 @@
     <orderEntry type="library" name="Servlet-api" level="project" />
     <orderEntry type="library" name="XMLstuff" level="project" />
     <orderEntry type="library" name="tomcat" level="project" />
-    <orderEntry type="library" name="hibernate3 (2)" level="project" />
+    <orderEntry type="library" name="hibernate4" level="project" />
     <orderEntry type="library" name="resin" level="project" />
     <orderEntry type="library" name="soot" level="project" />
     <orderEntry type="library" name="bcel" level="project" />

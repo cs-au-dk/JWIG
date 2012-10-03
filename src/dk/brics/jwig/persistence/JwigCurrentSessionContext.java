@@ -6,9 +6,10 @@ import dk.brics.jwig.server.SessionManagerListener;
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
-import org.hibernate.classic.Session;
-import org.hibernate.context.CurrentSessionContext;
-import org.hibernate.engine.SessionFactoryImplementor;
+import org.hibernate.Session;
+import org.hibernate.context.spi.CurrentSessionContext;
+import org.hibernate.engine.spi.SessionBuilderImplementor;
+import org.hibernate.engine.spi.SessionFactoryImplementor;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -183,12 +184,12 @@ public class JwigCurrentSessionContext implements CurrentSessionContext, Session
         public synchronized Session getS() {
             if (s == null) {
                 opened = true;
-                return s = factoryImplementor.openSession(
-                        null,
-                        isAutoFlushEnabled(),
-                        isAutoCloseEnabled(),
-                        factoryImplementor.getSettings().getConnectionReleaseMode()
-                );
+                SessionBuilderImplementor sessionBuilderImplementor = factoryImplementor.withOptions();
+                sessionBuilderImplementor.connection(null);
+                sessionBuilderImplementor.flushBeforeCompletion(isAutoFlushEnabled());
+                sessionBuilderImplementor.autoClose(isAutoCloseEnabled());
+                sessionBuilderImplementor.connectionReleaseMode(factoryImplementor.getSettings().getConnectionReleaseMode());
+                return s = sessionBuilderImplementor.openSession();
             }
             return s;
         }

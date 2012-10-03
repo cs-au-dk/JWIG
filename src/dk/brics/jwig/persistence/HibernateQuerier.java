@@ -7,10 +7,13 @@ import dk.brics.jwig.server.cache.CacheInterceptor;
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.proxy.HibernateProxyHelper;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.service.ServiceRegistryBuilder;
 
 import java.util.Properties;
 
@@ -54,7 +57,8 @@ public class HibernateQuerier implements Querier {
      */
     public static void buildSessionFactory() {
         configuration.setInterceptor(new CacheInterceptor());
-        sessionFactory = configuration.buildSessionFactory();
+        ServiceRegistry serviceRegistry = new ServiceRegistryBuilder().applySettings(configuration.getProperties()).buildServiceRegistry();
+        sessionFactory = configuration.buildSessionFactory(serviceRegistry);
     }
 
     /**
@@ -178,6 +182,38 @@ public class HibernateQuerier implements Querier {
 	public void preInit(Properties properties) {
         init(properties);
     }
+
+    /**
+     * Returns the current session from the Hibernate SessionFactory
+     * @return
+     */
+    public Session getSession() {
+        return getFactory().getCurrentSession();
+    }
+
+    /**
+     * Returns the active transaction for this session if such
+     * a transaction exists. Otherwise creates a new active transaction
+     * and returns it.
+     * @param ses
+     * @return
+     */
+    public Transaction getOrBeginTransaction(Session ses) {
+        Transaction transaction = ses.getTransaction();
+        if (transaction == null || !transaction.isActive()) {
+            return ses.beginTransaction();
+        }
+        return transaction;
+    }
+
+    /**
+     * Convenience method for, equivalent to calling <code>getOrBeginTransaction(getSession())</code>
+     * @return
+     */
+    public Transaction getOrBeginTransaction() {
+        return getOrBeginTransaction(getSession());
+    }
+
 
     @SuppressWarnings("unchecked")
 	@Override

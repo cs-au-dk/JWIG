@@ -70,6 +70,7 @@
       <file url="file://$PROJECT_DIR$/../examples/src/guessinggame/GameState.java" />
       <file url="file://$PROJECT_DIR$/../src/dk/brics/jwig/analysis/GraphAnalyzer.java" />
       <file url="file://$PROJECT_DIR$/../examples/build/micro/HelloWorld3.java" />
+      <file url="file://$PROJECT_DIR$/../kickstart/src/Main.java" />
     </excludeFromCompile>
     <resourceExtensions>
       <entry name=".+\.(properties|xml|html|dtd|tld)" />
@@ -438,25 +439,22 @@
     </library>
     <library name="ehcache">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/../lib/ehcache.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/ehcache-core-2.6.0.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../lib/ehcache-1.5.0-sources.jar!/" />
-      </SOURCES>
+      <SOURCES />
     </library>
-    <library name="hibernate3 (2)">
+    <library name="hibernate4">
       <CLASSES>
         <root url="jar://$PROJECT_DIR$/../lib/dom4j.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/slf4j-api-1.6.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/slf4j-log4j12-1.6.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate-jpa-2.0-api-1.0.0.Final.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate3.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/javassist-3.9.0.GA.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/jta-1.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/antlr-2.7.6.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/commons-collections-3.1.jar!/" />
-        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate-jpa-2.0-api-1.0.0.Final-sources.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/dom4j-1.6.1.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/antlr-2.7.7.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/javassist-3.15.0-GA.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate-core-4.1.7.Final.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/jboss-transaction-api_1.1_spec-1.0.0.Final.jar!/" />
+        <root url="jar://$PROJECT_DIR$/../lib/hibernate/jboss-logging-3.1.0.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
@@ -471,8 +469,9 @@
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/../lib/app-building/java5-src.jar!/" />
         <root url="file://$USER_HOME$/src/java5/trunk/generated" />
+        <root url="intellijad://intellijad" />
+        <root url="file://$USER_HOME$/src/java5/trunk/src" />
       </SOURCES>
     </library>
     <library name="json">

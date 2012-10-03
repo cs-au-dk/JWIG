@@ -12,7 +12,7 @@ import java.util.Iterator;
 public class CacheInterceptor extends EmptyInterceptor {
 
     @Override
-	public void postFlush(@SuppressWarnings("rawtypes") Iterator iterator) {
+	public void postFlush(Iterator iterator) {
         while (iterator.hasNext()) {
 		    Persistable persistable = (Persistable) iterator.next();
 		    ThreadContext.getDependencyMap().objectUpdated(persistable);

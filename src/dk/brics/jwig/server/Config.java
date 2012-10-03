@@ -145,7 +145,7 @@ public class Config {
         //Setup the connection pool. Only thing that should be fiddled with is the timeout.
         //This must be smaller than the server timeout for hibernate to keep the conection alive.
         //The server timeout is typically 1800 seconds.
-        p.put("hibernate.connection.provider_class","org.hibernate.connection.C3P0ConnectionProvider");
+        p.put("hibernate.connection.provider_class","org.hibernate.service.jdbc.connections.internal.C3P0ConnectionProvider");
         p.put("hibernate.c3p0.acquire_increment", "1");
         p.put("hibernate.c3p0.idle_test_period", "1000");
         p.put("hibernate.c3p0.max_size", "100");
