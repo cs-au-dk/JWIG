@@ -11,3 +11,7 @@ local.properties
 .DS_Store
 
 *.iws
+
+examples/src/jwig.properties
+
+microchat/MicroChat.java
