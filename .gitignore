@@ -15,3 +15,17 @@ local.properties
 examples/src/jwig.properties
 
 microchat/MicroChat.java
+
+manual/manual.toc
+
+manual/manual.aux
+
+manual/manual.log
+
+manual/manual.html
+
+manual/manual.pdf
+
+manual/manual.out
+
+manual/manual.tex
