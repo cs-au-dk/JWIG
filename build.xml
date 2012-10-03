@@ -275,8 +275,12 @@
     </target>
 
     <target name="manual">
-        <java classname="org.apache.xalan.xslt.Process" fork="true">
-            <arg line="-IN manual/manual.xml -XSL manual/style.xsl -OUT manual/manual.html"/>
+        <java classname="net.sf.saxon.Transform" fork="true" output="manual/manual.html">
+            <arg line="manual/manual.xml manual/style.xsl"/>
+            <classpath refid="classpath"/>
+        </java>
+        <java classname="net.sf.saxon.Transform" fork="true" output="manual/manual.tex">
+            <arg line="manual/manual.xml manual/stylelatex.xsl"/>
             <classpath refid="classpath"/>
         </java>
     </target>

@@ -1,5 +1,5 @@
-<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-xmlns:datetime="http://exslt.org/dates-and-times">
+<xsl:stylesheet version="2.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+ xmlns:fn="http://www.w3.org/2005/xpath-functions">
 
 	<xsl:output
 		method="html"
@@ -157,11 +157,7 @@ xmlns:datetime="http://exslt.org/dates-and-times">
 	</xsl:template>
 
 	<xsl:template match="date">
-		<xsl:value-of select="datetime:month-name()"/>
-		<xsl:text> </xsl:text>
-		<xsl:value-of select="datetime:day-in-month()"/>
-		<xsl:text> </xsl:text>
-		<xsl:value-of select="datetime:year()"/>
+        <xsl:value-of select="fn:format-date(fn:current-date(),'[MNn] [D1] [Y]','en',(),())"/>
 	</xsl:template>
 
 	<xsl:template match="exampleapp">
