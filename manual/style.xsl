@@ -79,6 +79,7 @@
    				</dd>
    			</xsl:for-each>
 	  	</dl>
+        (hover mouse to see subsections)
 	</xsl:template>
 
 	<xsl:template name="subsidecontents">
@@ -99,6 +100,7 @@
    	</xsl:template>
 
 	<xsl:template match="contents">
+        <h2>Contents</h2>
 		<dl class="contents">
     		<xsl:for-each select="//div[@id='main']/h1">
     			<dt><xsl:number/>.</dt>

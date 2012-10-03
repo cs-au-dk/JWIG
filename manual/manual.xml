@@ -18,12 +18,10 @@
 <h1 class="center">JWIG User Manual</h1>
 <p>Contents:</p>
 <sidecontents/>
-(hover mouse to see subsections)
 </div>
 
 <div id="main">
 
-<h2>Contents</h2>
 <contents/>
 
 <!-- =============================================================================================== -->
