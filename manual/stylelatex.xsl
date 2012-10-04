@@ -5,20 +5,30 @@
 	<xsl:output
 		method="text"
 		encoding="ISO-8859-1"/>
+
+    <xsl:strip-space elements="*"/>
 	
 	<xsl:key name="rel" match="h1|h2" use="@id"/>
 
 	<xsl:template match="head">
 	</xsl:template>
 
+     <xsl:template match="titlepage">
+            \title{<xsl:apply-templates select="title/node()"/>}
+            \author{<xsl:apply-templates select="authors/node()"/> \\
+                <xsl:apply-templates select="emails/node()"/>}
+            \date{<xsl:apply-templates select="lastupdate"/>}
+         \maketitle
+    </xsl:template>
+
 	<xsl:template match="div[@id='main']/h1" priority="1">
-		\section{<xsl:apply-templates select="node()"/>}
-        <xsl:if test="@id">\label{<xsl:value-of select="@id"/>}</xsl:if>
+		<xsl:text>\section{</xsl:text><xsl:apply-templates select="node()"/><xsl:text>}</xsl:text>
+        <xsl:if test="@id"><xsl:text>\label{</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:if>
 	</xsl:template>
 
     <xsl:template match="div[@id='main']/h3" priority="1">
-            \subsubsection{<xsl:apply-templates select="node()"/>}
-            <xsl:if test="@id">\label{<xsl:value-of select="@id"/>}</xsl:if>
+            <xsl:text>\subsubsection{</xsl:text><xsl:apply-templates select="node()"/><xsl:text>}</xsl:text>
+            <xsl:if test="@id"><xsl:text>\label{</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:if>
     </xsl:template>
 
 	<xsl:template match="div[@id='main']/h2" priority="1">
@@ -33,7 +43,7 @@
 	</xsl:template>
 
 	<xsl:template match="xact">
-	  <xsl:text>X</xsl:text><span class="smallcaps">act</span>
+	  <xsl:text>\textsc{Xact}</xsl:text>
 	</xsl:template>
 
 	<xsl:template match="doc"><xsl:variable name="url">
@@ -47,19 +57,19 @@
 					<xsl:text>.html</xsl:text>
 				</xsl:otherwise>
 			</xsl:choose>
-		</xsl:variable>\href{../doc/index.html?<xsl:value-of select="$url"/>}{\texttt{<xsl:apply-templates select="node()"/>}}</xsl:template>
+		</xsl:variable>\href{http://www.brics.dk/JWIG/doc-public/index.html?<xsl:value-of select="$url"/>}{\texttt{<xsl:apply-templates select="node()"/>}}</xsl:template>
 
 
 	<xsl:template match="contents">
         \tableofcontents
+        \newpage
 	</xsl:template>
 
 
 
 	<xsl:template match="example">
-        \begin{Verbatim}[frame=single, label=<xsl:apply-templates select="caption/node()"/>]
-		    <xsl:value-of select="text()|*[local-name() != 'caption']"/>
-        \end{Verbatim}
+        <xsl:variable name="size" select="if(fn:string-length(fn:string-join(text(), '')) > 500) then '\tiny' else '\scriptsize'" /><xsl:text>\begin{lstlisting}[basicstyle=</xsl:text><xsl:value-of select="$size"/><xsl:text> ,frame=single,title=</xsl:text><xsl:apply-templates select="caption/node()"/>]<xsl:value-of select="text()|*[local-name() != 'caption']"/>
+        <xsl:text>\end{lstlisting}</xsl:text>
     </xsl:template>
 
 	<xsl:template match="ref">Section \ref{<xsl:value-of select="@idref"/>}</xsl:template>
@@ -77,12 +87,14 @@
 	</xsl:template>
 
     <xsl:template match="dl">
-        \begin{description}
-        <xsl:apply-templates/>
-        \end{description}
+        <xsl:text>\begin{description}</xsl:text>
+        <xsl:apply-templates/><xsl:text>
+        \end{description}</xsl:text>
     </xsl:template>
 
-    <xsl:template match="dt">\item{<xsl:apply-templates select="node()"/>}</xsl:template>
+    <xsl:template match="dt">
+        \item{<xsl:apply-templates select="node()"/>}\\
+    </xsl:template>
 
 	<xsl:template match="html">
         \documentclass[11pt]{article}
@@ -95,6 +107,11 @@
         \usepackage{hyperref}
         \usepackage{parskip}
         \usepackage[draft]{fixme}
+        \usepackage{listings}
+        \setcounter{tocdepth}{2}
+        \lstset{language=java,morekeywords={\[\[,\]\],&lt;\[,\]&gt;}}
+        \usepackage{tabularx}
+
 
 
         \begin{document}
@@ -110,11 +127,15 @@
         fn:replace(
         fn:replace(
         fn:replace(
+        fn:replace(
+        fn:replace(
         fn:replace($in, '\\', '\\\\'),
         '\$', '\\\$'),
         '&amp;','\\&amp;'),
         '&lt;','\$&lt;\$'),
         '&gt;','\$&gt;\$'),
+        '\{','\\{'),
+        '\}','\\}'),
         '_','\\_')"/>
     </xsl:function>
 
@@ -126,41 +147,57 @@
 
     <xsl:template match="b">\textbf{<xsl:apply-templates/>}</xsl:template>
 
-    <xsl:template match="pre">\texttt{<xsl:apply-templates/>}\\</xsl:template>
+    <xsl:template match="pre">\\\texttt{<xsl:apply-templates/>}<xsl:if test="following-sibling::*">\\\\</xsl:if></xsl:template>
 
-    <xsl:template match="pre//text()"><xsl:value-of select="fn:replace(s:escapelatex(.), '\n','\\\\')"/></xsl:template>
+    <xsl:template match="pre//text()"><xsl:value-of select="fn:replace(s:escapelatex(fn:replace(., '\s+$', '', 'm')), '\n','\\\\')"/></xsl:template>
 
 
-    <xsl:template match="ul">\begin{itemize}
+    <xsl:template match="ul">
+        <xsl:text>\begin{itemize}</xsl:text>
         <xsl:apply-templates/>
-        \end{itemize}</xsl:template>
+        <xsl:text>\end{itemize}</xsl:text>
+    </xsl:template>
 
-    <xsl:template match="ol">\begin{enumerate}
+    <xsl:template match="ol">
+        <xsl:text>\begin{enumerate}</xsl:text>
         <xsl:apply-templates/>
-        \end{enumerate}</xsl:template>
+        <xsl:text>\end{enumerate}</xsl:text>
+    </xsl:template>
 
-    <xsl:template match="li">\item <xsl:apply-templates/></xsl:template>
+    <xsl:template match="li">
+        <xsl:text>\item </xsl:text>
+        <xsl:apply-templates/>
+    </xsl:template>
 
-    <xsl:template match="p"><xsl:apply-templates/>\hspace*{\fill}\\</xsl:template>
+    <xsl:template match="p">
+        <xsl:apply-templates/>
+        <xsl:text>
+
+        </xsl:text>
+    </xsl:template>
 
     <xsl:template match="a">
-        <xsl:if test="text() = @href">\url{<xsl:value-of select="@href"/>}</xsl:if>
-        <xsl:if test="text() != @href">\href{<xsl:value-of select="@href"/>}{<xsl:value-of select="text()"/>}</xsl:if>
-
+        <xsl:choose>
+            <xsl:when test="text() = @href">\url{<xsl:value-of select="@href"/>}</xsl:when>
+            <xsl:otherwise>\href{<xsl:value-of select="@href"/>}{<xsl:apply-templates/>}</xsl:otherwise>
+        </xsl:choose>
     </xsl:template>
 
     <xsl:template match="table">
-        \begin{tabular}{lll}
+        <xsl:text>
+
+            \begin{tabularx}{\linewidth}{lll}</xsl:text>
         <xsl:apply-templates/>
-        \end{tabular}
+        <xsl:text>\end{tabularx}
+
+        </xsl:text>
     </xsl:template>
 
     <xsl:template match="tr">
         <xsl:apply-templates/>\\
     </xsl:template>
 
-<xsl:template match="td"><xsl:apply-templates/>&amp;</xsl:template>
+    <xsl:template match="td"><xsl:apply-templates/>&amp;</xsl:template>
+
     <xsl:template match="th">\textbf{<xsl:apply-templates/>}&amp;</xsl:template>
-
-
 </xsl:stylesheet>

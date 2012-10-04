@@ -457,9 +457,7 @@
         <root url="jar://$PROJECT_DIR$/../lib/hibernate/jboss-logging-3.1.0.GA.jar!/" />
       </CLASSES>
       <JAVADOC />
-      <SOURCES>
-        <root url="intellijad://intellijad" />
-      </SOURCES>
+      <SOURCES />
     </library>
     <library name="java5">
       <CLASSES>

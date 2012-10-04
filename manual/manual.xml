@@ -7,16 +7,15 @@
 </head>
 <body>
 
-<div id="titlepage">
-<h1>JWIG User Manual</h1>
-<h2>Anders Møller &amp; Mathias Schwarz<br/>
-<a href="mailto:amoeller@cs.au.dk,schwarz@cs.au.dk?Subject=JWIG">{amoeller,schwarz}@cs.au.dk</a></h2>
-<h3>Last update: <date/></h3>
-</div>
+<titlepage>
+    <title>JWIG User Manual</title>
+    <authors>Anders Møller &amp; Mathias Schwarz</authors>
+    <emails><a href="mailto:amoeller@cs.au.dk,schwarz@cs.au.dk?Subject=JWIG">{amoeller,schwarz}@cs.au.dk</a></emails>
+    <lastupdate><date/></lastupdate>
+</titlepage>
 
 <div id="contents">
 <h1 class="center">JWIG User Manual</h1>
-<p>Contents:</p>
 <sidecontents/>
 </div>
 
@@ -1224,7 +1223,8 @@ JWIG uses <a href="http://logging.apache.org/log4j/">log4j</a> for logging, and 
 logs many internal events. A <tt><a href="http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Logger.html">Logger</a></tt>
 object for logging application specific events can be obtained by using the factory method on Logger like this:
 </p>
-<example><caption>Obtaining a logger</caption>Logger log = Logger.getLogger(<i>WEBAPP</i>.class);</example>
+<example><caption>Obtaining a logger</caption>
+Logger log = Logger.getLogger(<i>WEBAPP</i>.class);</example>
 <p>
 where <code><i>WEBAPP</i></code> is the name of your web app class.
 See also the configuration properties (<ref idref="sec:configuration"/>) whose name start with <tt>log4j</tt>. The following

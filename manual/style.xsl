@@ -9,6 +9,16 @@
 	
 	<xsl:key name="rel" match="h1|h2" use="@id"/>
 
+
+    <xsl:template match="titlepage">
+        <div id="titlepage">
+            <h1><xsl:apply-templates select="title/node()"/> </h1>
+            <h2><xsl:apply-templates select="authors/node()"/> <br/>
+                <xsl:apply-templates select="emails/node()"/></h2>
+            <h3>Last update: <xsl:apply-templates select="lastupdate"/></h3>
+        </div>
+    </xsl:template>
+
 	<xsl:template match="head">
 		<xsl:copy>
 			<xsl:apply-templates select="node()"/>
@@ -65,6 +75,7 @@
 	</xsl:template>
 
 	<xsl:template match="sidecontents">
+        <p>Contents:</p>
 		<dl class="contents">
     		<xsl:for-each select="//div[@id='main']/h1">
     			<dt><xsl:number/>.</dt>
