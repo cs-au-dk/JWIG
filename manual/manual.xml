@@ -1185,8 +1185,10 @@ and JWIG deserializes the objects using the <tt>Querier</tt> interface described
 public URL gotoUser(User user) {
     return makeURL("viewUser", user);
 }</example>
+    </p>
 
 <h3>Access protection methods</h3>
+    <p>
 All <tt>Persistable</tt> objects must be guarded by an <tt>access</tt> method that determines whether access to the object is
 allowed. This protects the web application against a common type of security vulnerabilities where the client changes
 a database ID in the request URL or in a request parameter and hereby gains access to additional data in from the database.
@@ -1197,12 +1199,13 @@ JWIG is safe by default so the default behavior of the access system is to rejec
 In this example, the access method limits access to the user objects such that the user with the name "admin" will
 not be accessed. The web method taking the User object as parameter will only be invoked if this method returns true.
 <example><caption>Example of an access method for parameter passing</caption>
-  /**
-   * This method is always called when a web method take a value of type 'User'
-   */
-  public boolean access(User user) {
-    return !user.getName().equals("admin");
-  }
+/**
+  * This method is always called when a web method take a value
+  * of type 'User'
+  */
+public boolean access(User user) {
+  return !user.getName().equals("admin");
+}
 </example>
     </p>
     <p>
@@ -1213,9 +1216,9 @@ As an example: When this annotation is set on the getter or setter of a property
 then JWIG will treat it as if it were the following access method.
 
 <example><caption>Behavior if MyObject.getUser() is annotated with @AccessScope</caption>
-  public boolean access(MyObject o) {
-    return access(o.getUser());
-  }
+public boolean access(MyObject o) {
+  return access(o.getUser());
+}
 </example>
 </p>
 

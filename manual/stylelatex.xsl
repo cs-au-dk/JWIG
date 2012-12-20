@@ -27,8 +27,7 @@
 	</xsl:template>
 
     <xsl:template match="div[@id='main']/h3" priority="1">
-            <xsl:text>\subsubsection{</xsl:text><xsl:apply-templates select="node()"/><xsl:text>}</xsl:text>
-            <xsl:if test="@id"><xsl:text>\label{</xsl:text><xsl:value-of select="@id"/><xsl:text>}</xsl:text></xsl:if>
+            <xsl:text>\subsubsection*{</xsl:text><xsl:apply-templates select="node()"/><xsl:text>}</xsl:text>
     </xsl:template>
 
 	<xsl:template match="div[@id='main']/h2" priority="1">
