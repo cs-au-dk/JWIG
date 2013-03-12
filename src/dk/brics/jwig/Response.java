@@ -14,7 +14,11 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Response for an HTTP request.
+ * Response for an HTTP request. The Response object holds the instantiated handlers as well as a payload of data
+ * that is sent to the client.
+ *
+ * Programmers can store data related to the computation of the response in the {@link #responseScopeData} property
+ * of the Response
  */
 public class Response {
 
@@ -38,11 +42,13 @@ public class Response {
 
 	private List<Cookie> cookies;
 
+    private WeakHashMap<HttpServletRequest,Map<Class<?>,Object>> responseScopeData = new WeakHashMap<>();
+
 	/**
 	 * Constructs a new empty response with status code 200 (OK).
 	 */
 	public Response() {
-		handlers = new HashMap<String,AbstractHandler>();
+		handlers = new HashMap<>();
 		status = HttpServletResponse.SC_OK;
 		refresh(null);
 	}
@@ -57,6 +63,7 @@ public class Response {
 		sessions = p.sessions;
 	    contenttype = p.contenttype;
         augmented = p.augmented;
+        responseScopeData = p.responseScopeData;
         refresh(null);
 	}
 
@@ -278,5 +285,56 @@ public class Response {
             return payload.getValue();
         }
         return null;
+    }
+
+    /**
+      * Sets the responseScopeData object on the current response. See {@link #getResponseScopeData(Class)}.
+     *  At most one object can be added for each type.
+      *
+      * @param <E>
+      */
+    public <E> void setResponseScopeData(E e) {
+        Class<?> type = e.getClass();
+        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        classObjectMap.put(type, e);
+    }
+
+
+    /**
+        * Returns the responseScopeData object for the current response. The object should be a Java bean containing
+        * properties corresponding to the data that is tracked as part of the response generation.
+        *
+        * @param <E> The type of the returned object
+        * @return
+        */
+    public <E> E getResponseScopeData(Class<E> type) {
+        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        Object o = classObjectMap.get(type);
+        if (!o.getClass().equals(type)) {
+            throw new JWIGException("No response scope data of type " + type.getName());
+        } else
+            return (E) o;
+    }
+
+    /**
+     * Returns true if the current response has response code data of the given type
+     * @param type
+     * @return
+     */
+    public boolean hasResponseScopeData(Class<?> type) {
+        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        if (classObjectMap == null) return false;
+        return classObjectMap.containsKey(type);
+    }
+
+    private Map<Class<?>, Object> getRequestResponseMap() {
+        ThreadContext threadContext = ThreadContext.get();
+        HttpServletRequest servletRequest = threadContext.getServletRequest();
+        Map<Class<?>, Object> classObjectMap = responseScopeData.get(servletRequest);
+        if (classObjectMap == null) {
+            classObjectMap = new HashMap<>();
+            responseScopeData.put(servletRequest,classObjectMap);
+        }
+        return classObjectMap;
     }
 }

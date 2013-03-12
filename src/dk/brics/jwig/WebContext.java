@@ -1052,7 +1052,13 @@ abstract public class WebContext {
                                         + " while attempting to regenerate referer response.)");
             }
             String regenerate_id = con.getHeaderField(JWIG_REGENERATE);
-            referer_response = ThreadContext.getHandlerCache().removeResponse(regenerate_id);
+                HandlerCache handlerCache = ThreadContext.getHandlerCache();
+            if (handlerCache.hasResponse(regenerate_id)) {
+                referer_response = handlerCache.removeResponse(regenerate_id);
+            } else {
+                //There has been a request in between, so the handler is in the ordinary cache
+                referer_response = getReferer(referer);
+            }
             if (referer_response == null) { //This should never happen
                 throw new JWIGException("Failed to regenerate and retrieve referer response.");
             }

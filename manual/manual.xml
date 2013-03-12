@@ -262,7 +262,7 @@ gap named <tt>LINK</tt>.
 </p>
 
 <p>
-Named gaps are filled using the <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/XML.html#plug(java.lang.String, java.lang.Object)"><tt>plug</tt></a> operator:
+Named gaps are filled using the <a href="http://www.brics.dk/Xact/doc/dk/brics/xact/XML.html#plug(java.lang.String, java.lang.Object)"><tt>plug</tt></a> operation:
 </p>
 <example><caption>Building XML templates using <tt>plug</tt></caption>
 XML hello1 = [[&lt;p align=[ALIGNMENT]>Hello &lt;[WHAT]>!&lt;/p>]];

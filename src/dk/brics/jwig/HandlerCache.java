@@ -49,8 +49,14 @@ public class HandlerCache {
     }
 
     public Response removeResponse(String r) {
+        if (r == null) return null;
         ResponseEntry remove = cachedResponses.remove(r);
         return remove == null? null : remove.response;
+    }
+
+    public boolean hasResponse(String r) {
+        if (r == null) return false;
+        return cachedResponses.containsKey(r);
     }
 
     private class ResponseEntry {

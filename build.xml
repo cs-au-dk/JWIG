@@ -19,7 +19,7 @@
 
     <target name="compile">
         <mkdir dir="build"/>
-        <javac srcdir="src" includes="**" excludes="**/analysis/**" source="1.6" target="1.6" destdir="build"
+        <javac srcdir="src" includes="**" excludes="**/analysis/**" source="1.7" target="1.7" destdir="build"
                optimize="${optimize}" debug="${debug}" includeantruntime="false">
             <classpath refid="classpath"/>
             <compilerarg line="-encoding ISO-8859-1" compiler="modern"/>
