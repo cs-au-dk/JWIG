@@ -1375,7 +1375,6 @@ can now use the debugger while Tomcat is running.
 
 <h1 id="sec:analysis">The JWIG program analysis suite</h1>
 
-<remark>TO DO: update this section with the newest <xact/>/JWIG analyses </remark>
 
 <p>
 The design of JWIG allows some specialized program analyses to be performed, such that the programmer
@@ -1389,8 +1388,8 @@ XML templates are never plugged into attribute gaps,</li>
 match the form names that occur in the generated XHTML pages,</li>
 <li> <b>URL construction:</b> that values of <tt>@URLPattern</tt> and <tt>makeURL</tt>
 are meaningful, and</li>
-<li> <b>method safety:</b> that web methods and XML producers do not have side effects
-that may influence behavior of the web app.</li>
+<li> <b>web method type consistency:</b> that the parameters sent to <tt>makeURL</tt> match
+the type signatures of the target web method.</li>
 <li> <b>regeneration correctness:</b> that the referer page can be reconstructed correctly after system reboot
 and emptying of the cache.</li>
 </ul>
