@@ -227,8 +227,14 @@ public abstract class WebSite {
     /**
      * Invoked when the JWIG server starts, for constructing web apps (
      * <code>WebApp</code> objects) and other initialization.
+     * At this point the ThreadContext class has not yet been initialized.
      */
     abstract public void init();
+
+    /**
+     * Invoked when the JWIG server has finished initializing. Can be used to add hooks into the initialized JWIG system.
+     */
+    public void postInit() {}
 
     /**
      * Closes the hibernate session factory (if any) and calls the {@link #destroy}

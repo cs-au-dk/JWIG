@@ -1,10 +1,14 @@
 package dk.brics.jwig.persistence.security;
 
 import dk.brics.jwig.AccessDeniedException;
+import dk.brics.jwig.DispatchAdapter;
 import dk.brics.jwig.JWIGException;
 import dk.brics.jwig.WebApp;
 import dk.brics.jwig.persistence.Persistable;
 import dk.brics.jwig.persistence.Querier;
+import dk.brics.jwig.server.DispatchListener;
+import dk.brics.jwig.server.ThreadDispatchEvent;
+import dk.brics.jwig.server.WebMethodDispatchEvent;
 import dk.brics.jwig.server.cache.ProxyObject;
 
 import java.lang.reflect.Method;
@@ -14,7 +18,7 @@ import java.util.Map;
 /**
  * See {@link DirectObjectSecurityManager}
  */
-public class DirectObjectSecurityManagerImpl implements DirectObjectSecurityManager {
+public class DirectObjectSecurityManagerImpl extends DispatchAdapter implements DirectObjectSecurityManager {
     private final WebApp webapp;
     private final Querier querier;
     private final ThreadLocal<Map<ProxyObject, Boolean>> persistenceCache = new ThreadLocal<Map<ProxyObject, Boolean>>();
@@ -88,12 +92,12 @@ public class DirectObjectSecurityManagerImpl implements DirectObjectSecurityMana
     }
 
     @Override
-	public void threadDispatched(Thread t) {
+	public void threadDispatched(ThreadDispatchEvent t) {
         persistenceCache.set(new HashMap<ProxyObject, Boolean>());
     }
 
     @Override
-	public void threadDismissed(Thread t) {
+	public void threadDismissed(ThreadDispatchEvent t) {
         persistenceCache.set(null);
     }
 }

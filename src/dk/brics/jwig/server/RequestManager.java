@@ -103,6 +103,7 @@ public class RequestManager {
         for (Method m : webapp_class.getMethods()) {
             Class<?> returntype = m.getReturnType();
             if (Modifier.isPublic(m.getModifiers())
+                    && m.getAnnotation(IgnoreWebMethod.class) == null
                     && !Modifier.isStatic(m.getModifiers())
                     && (returntype.equals(Void.TYPE)
                             || returntype.equals(String.class)
@@ -184,6 +185,10 @@ public class RequestManager {
         }
         if (m.getAnnotation(DELETE.class) != null) {
             methods.add("DELETE");
+            none = false;
+        }
+        if (m.getAnnotation(OPTIONS.class) != null) {
+            methods.add("OPTIONS");
             none = false;
         }
         if (none) {

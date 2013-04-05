@@ -54,7 +54,7 @@ public final class Dispatcher implements Filter {
     private Logger log;
 
     private final List<DispatchListener> listeners = new LinkedList<DispatchListener>();
-    private static final Collection<String> ALLOWED_METHODS = new HashSet<String>(Arrays.asList("GET", "POST", "TRACE", "PUT", "DELETE", "HEAD"));
+    private static final Collection<String> ALLOWED_METHODS = new HashSet<String>(Arrays.asList("GET", "POST", "TRACE", "PUT", "DELETE", "HEAD", "OPTIONS"));
 
     private ServletFileUpload fileupload;
 
@@ -170,7 +170,7 @@ public final class Dispatcher implements Filter {
                       ", jwig.fileupload_maxsize=" + fileupload_maxsize +
                       "}");
 
-
+            website.postInit();
         } catch (Exception e) {
             if (log != null) {
                 log.fatal("Exception in init", e);
@@ -199,7 +199,7 @@ public final class Dispatcher implements Filter {
         try {
             // inform listeners
             for (DispatchListener l : listeners) {
-                l.threadDispatched(Thread.currentThread());
+                l.threadDispatched(new ThreadDispatchEvent(Thread.currentThread()));
             }
 
             // forward Comet requests to Synchronizer
@@ -280,7 +280,7 @@ public final class Dispatcher implements Filter {
         } finally {
             ThreadContext.set(null);
             for (DispatchListener l : listeners) {
-                l.threadDismissed(Thread.currentThread());
+                l.threadDismissed(new ThreadDispatchEvent(Thread.currentThread()));
             }
         }
     }
@@ -340,6 +340,9 @@ public final class Dispatcher implements Filter {
                     Object[] args = manager.match(rm, path.substring(prefixLength));
                     if (args != null) {
                         try {
+                            for (DispatchListener l : listeners) {
+                                l.webMethodDispatched(new WebMethodDispatchEvent(rm.getRequestManager().getWebApp(), rm.getMethod().getName(), args));
+                            }
                             manager.invoke(rm.getMethod(), manager.getWebApp(), args);
                         }
                         finally {

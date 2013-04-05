@@ -597,6 +597,7 @@ abstract public class WebContext {
     @DELETE
     @TRACE
     @HEAD
+    @OPTIONS
     public Object augment() {
         Object o = next();
         ThreadContext c = ThreadContext.get();

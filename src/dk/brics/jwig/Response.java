@@ -42,9 +42,9 @@ public class Response {
 
 	private List<Cookie> cookies;
 
-    private WeakHashMap<HttpServletRequest,Map<Class<?>,Object>> responseScopeData = new WeakHashMap<>();
+    private static String RES = "JWIG_RESSC" + new Random().nextInt();
 
-	/**
+    /**
 	 * Constructs a new empty response with status code 200 (OK).
 	 */
 	public Response() {
@@ -63,7 +63,6 @@ public class Response {
 		sessions = p.sessions;
 	    contenttype = p.contenttype;
         augmented = p.augmented;
-        responseScopeData = p.responseScopeData;
         refresh(null);
 	}
 
@@ -330,10 +329,10 @@ public class Response {
     private Map<Class<?>, Object> getRequestResponseMap() {
         ThreadContext threadContext = ThreadContext.get();
         HttpServletRequest servletRequest = threadContext.getServletRequest();
-        Map<Class<?>, Object> classObjectMap = responseScopeData.get(servletRequest);
+        Map<Class<?>, Object> classObjectMap = (Map<Class<?>, Object>) servletRequest.getAttribute(RES);
         if (classObjectMap == null) {
             classObjectMap = new HashMap<>();
-            responseScopeData.put(servletRequest,classObjectMap);
+            servletRequest.setAttribute(RES,classObjectMap);
         }
         return classObjectMap;
     }

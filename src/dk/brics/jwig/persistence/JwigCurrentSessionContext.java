@@ -1,8 +1,11 @@
 package dk.brics.jwig.persistence;
 
 import dk.brics.jwig.BadRequestException;
+import dk.brics.jwig.DispatchAdapter;
 import dk.brics.jwig.server.DispatchListener;
 import dk.brics.jwig.server.SessionManagerListener;
+import dk.brics.jwig.server.ThreadDispatchEvent;
+import dk.brics.jwig.server.WebMethodDispatchEvent;
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
 import org.hibernate.Transaction;
@@ -19,7 +22,7 @@ import java.util.Map;
  * A session context class for Hibernate that binds the life cycle of a persistent
  * object to that of a session.
  */
-public class JwigCurrentSessionContext implements CurrentSessionContext, SessionManagerListener, DispatchListener {
+public class JwigCurrentSessionContext extends DispatchAdapter implements CurrentSessionContext, SessionManagerListener {
     protected SessionFactoryImplementor factoryImplementor;
     private boolean autoCloseEnabled = false, autoFlushEnabled = true;
 
@@ -144,21 +147,21 @@ public class JwigCurrentSessionContext implements CurrentSessionContext, Session
     }
 
     @Override
-	public synchronized void threadDispatched(Thread t) {
+	public synchronized void threadDispatched(ThreadDispatchEvent t) {
         DBContext context = new DBContext();
-        context.setActiveThread(t);
-        threadContextMap.put(t, context);
+        context.setActiveThread(t.getThread());
+        threadContextMap.put(t.getThread(), context);
         contextMap.put(context, new SessionProxy());
     }
 
     @Override
-	public synchronized void threadDismissed(Thread t) {
+	public synchronized void threadDismissed(ThreadDispatchEvent t) {
         Session session = currentSession();
         Transaction transaction = session.getTransaction();
         if (transaction != null && transaction.isActive()) {
             transaction.rollback();
         }
-        DBContext dbContext = threadContextMap.get(t);
+        DBContext dbContext = threadContextMap.get(t.getThread());
         if (!reverseSessionContextMap.containsKey(dbContext)) {  //Not bound by a session
             JwigCurrentSessionContext.SessionProxy sessionProxy = contextMap.get(dbContext);
             if (sessionProxy.isOpened()) {
