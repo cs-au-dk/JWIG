@@ -16,6 +16,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -826,18 +827,26 @@ abstract public class WebContext {
         atomicInteger.incrementAndGet();
     }
 
-    @Priority(PRE_CACHE)
+    private static byte[] jwigjs;
+
+    @Priority(MAX_PRIORITY)
     @URLPattern("jwig.js")
     public void jwigJS() throws IOException {
-        ServletOutputStream outputStream = getServletResponse()
-                .getOutputStream();
-        InputStream stream = WebContext.class.getResourceAsStream("jwig.js");
-        byte[] buf = new byte[1024];
-        int read;
-        while ((read = stream.read(buf)) != -1) {
-            outputStream.write(buf, 0, read);
+        if (jwigjs == null) {
+            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+            try (InputStream stream = WebContext.class.getResourceAsStream("jwig.js")) {
+                byte[] buf = new byte[1024];
+                int read;
+                while ((read = stream.read(buf)) != -1) {
+                    bout.write(buf, 0, read);
+                }
+            }
+            jwigjs = bout.toByteArray();
         }
+        ServletOutputStream outputStream = getServletResponse().getOutputStream();
+        outputStream.write(jwigjs);
         getResponse().setContentType("text/javascript");
+        outputStream.close();
     }
 
     /**

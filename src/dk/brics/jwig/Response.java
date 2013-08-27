@@ -17,7 +17,7 @@ import java.util.*;
  * Response for an HTTP request. The Response object holds the instantiated handlers as well as a payload of data
  * that is sent to the client.
  *
- * Programmers can store data related to the computation of the response in the {@link #responseScopeData} property
+ * Programmers can store data related to the computation of the response in the {@link #getRequestScopeMap} property
  * of the Response
  */
 public class Response {
@@ -294,7 +294,7 @@ public class Response {
       */
     public <E> void setResponseScopeData(E e) {
         Class<?> type = e.getClass();
-        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        Map<Class<?>, Object> classObjectMap = getRequestScopeMap();
         classObjectMap.put(type, e);
     }
 
@@ -307,7 +307,7 @@ public class Response {
         * @return
         */
     public <E> E getResponseScopeData(Class<E> type) {
-        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        Map<Class<?>, Object> classObjectMap = getRequestScopeMap();
         Object o = classObjectMap.get(type);
         if (!o.getClass().equals(type)) {
             throw new JWIGException("No response scope data of type " + type.getName());
@@ -321,19 +321,25 @@ public class Response {
      * @return
      */
     public boolean hasResponseScopeData(Class<?> type) {
-        Map<Class<?>, Object> classObjectMap = getRequestResponseMap();
+        Map<Class<?>, Object> classObjectMap = getRequestScopeMap();
         if (classObjectMap == null) return false;
         return classObjectMap.containsKey(type);
     }
 
-    private Map<Class<?>, Object> getRequestResponseMap() {
+    private Map<Class<?>, Object> getRequestScopeMap() {
         ThreadContext threadContext = ThreadContext.get();
         HttpServletRequest servletRequest = threadContext.getServletRequest();
-        Map<Class<?>, Object> classObjectMap = (Map<Class<?>, Object>) servletRequest.getAttribute(RES);
-        if (classObjectMap == null) {
-            classObjectMap = new HashMap<>();
-            servletRequest.setAttribute(RES,classObjectMap);
+        Map<WebApp, Map<Class<?>, Object>> responseMap = (Map<WebApp, Map<Class<?>, Object>>) servletRequest.getAttribute(RES);
+        if (responseMap == null) {
+            responseMap = new HashMap<>();
+            servletRequest.setAttribute(RES,responseMap);
         }
-        return classObjectMap;
+        WebApp webApp = WebApp.get();
+        Map<Class<?>, Object> webAppMap = responseMap.get(webApp);
+        if (webAppMap == null) {
+            webAppMap = new HashMap<>();
+            responseMap.put(webApp,webAppMap);
+        }
+        return webAppMap;
     }
 }
