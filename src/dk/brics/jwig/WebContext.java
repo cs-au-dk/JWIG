@@ -828,10 +828,17 @@ abstract public class WebContext {
     }
 
     private static byte[] jwigjs;
+    private static String jwigjsetag = new Date().hashCode() + "";
 
     @Priority(MAX_PRIORITY)
     @URLPattern("jwig.js")
     public void jwigJS() throws IOException {
+        String etag = getServletRequest().getHeader("If-None-Match");
+        if (jwigjsetag.equals(etag)) {
+            getServletResponse().setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            getServletResponse().getOutputStream().close();
+            return;
+        }
         if (jwigjs == null) {
             ByteArrayOutputStream bout = new ByteArrayOutputStream();
             try (InputStream stream = WebContext.class.getResourceAsStream("jwig.js")) {
@@ -843,9 +850,10 @@ abstract public class WebContext {
             }
             jwigjs = bout.toByteArray();
         }
+        getResponse().setContentType("text/javascript");
+        getServletResponse().setHeader("ETag", jwigjsetag);
         ServletOutputStream outputStream = getServletResponse().getOutputStream();
         outputStream.write(jwigjs);
-        getResponse().setContentType("text/javascript");
         outputStream.close();
     }
 
