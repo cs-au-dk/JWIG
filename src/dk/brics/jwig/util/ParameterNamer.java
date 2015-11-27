@@ -26,14 +26,16 @@ public class ParameterNamer {
         Type[] types = parsedMethod.getArgumentTypes();
         LocalVariableTable table = parsedMethod.getLocalVariableTable();
         ArrayList<String> names = new ArrayList<String>();
-        //And the arguments are located in the first locals on the stack at pc=0
-        for (int i = 0; i < types.length; i++) {
-            int offset = i;
-            if (!parsedMethod.isStatic()) {
-                offset++;//We add one to the offset for nonstatic methods since argument 0 is 'this'
+	if (table != null) {
+            //And the arguments are located in the first locals on the stack at pc=0
+            for (int i = 0; i < types.length; i++) {
+                int offset = i;
+                if (!parsedMethod.isStatic()) {
+                    offset++;//We add one to the offset for nonstatic methods since argument 0 is 'this'
+                }
+                LocalVariable localVariable = table.getLocalVariable(offset, 0);
+                names.add(localVariable.getName());
             }
-            LocalVariable localVariable = table.getLocalVariable(offset, 0);
-            names.add(localVariable.getName());
         }
         return names;
 
