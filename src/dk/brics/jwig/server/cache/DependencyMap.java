@@ -183,7 +183,9 @@ public class DependencyMap {
                 Cache cache = ThreadContext.getCache();
                 cache.remove(url.getUrl());
                 log.debug("Url removed " + url.getUrl());
-                ThreadContext.getSynchronizer().update(url.getUrl());
+		if (ThreadContext.getSynchronizer() != null) {
+		  ThreadContext.getSynchronizer().update(url.getUrl());
+		}
             }
         }
     }
